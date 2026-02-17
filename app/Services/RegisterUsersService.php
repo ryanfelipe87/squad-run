@@ -29,4 +29,15 @@ class RegisterUsersService {
             'users' => $users
         ];
     }
+
+    public function getUserById(int $id) : array {
+        $user = User::find($id);
+
+        $user ? $message = 'User retrieved successfully.' : $message = 'User not found.';
+
+        return [
+            'message' => $message,
+            'user' => $user
+        ];
+    }
 }

@@ -27,4 +27,9 @@ class RegisterUsersController extends Controller
         $response = $this->registerUsersService->getAllUsers();
         return response()->json($response, 200);
     }
+
+    public function getUserById($id){
+        $response = $this->registerUsersService->getUserById($id);
+        return response()->json($response, 200);
+    }
 }
