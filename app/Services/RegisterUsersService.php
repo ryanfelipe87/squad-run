@@ -20,4 +20,13 @@ class RegisterUsersService {
             'user' => $user
         ];
     }
+
+    public function getAllUsers() : array {
+        $users = User::orderBy('id')->get();
+
+        return [
+            'message' => 'Users retrieved successfully.',
+            'users' => $users
+        ];
+    }
 }

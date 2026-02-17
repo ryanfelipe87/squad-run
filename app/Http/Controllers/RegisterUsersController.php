@@ -22,4 +22,9 @@ class RegisterUsersController extends Controller
         $response = $this->registerUsersService->register($request->validated());
         return response()->json($response, 201);
     }
+
+    public function getAllUsers(){
+        $response = $this->registerUsersService->getAllUsers();
+        return response()->json($response, 200);
+    }
 }
