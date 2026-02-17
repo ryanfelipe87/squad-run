@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\LoginController;
 use App\Http\Controllers\RegisterUsersController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -23,3 +24,5 @@ Route::get('/register', [RegisterUsersController::class, 'index'])->name('regist
 Route::post('/register/create', [RegisterUsersController::class, 'register'])->name('register.create');
 Route::get('/users/all', [RegisterUsersController::class, 'getAllUsers'])->name('users.all');
 Route::get('/user/{id}', [RegisterUsersController::class, 'getUserById'])->name('user.byId');
+Route::get('/login', [LoginController::class, 'index'])->name('login');
+Route::post('login/authenticate', [LoginController::class, 'login'])->name('login.authenticate');
