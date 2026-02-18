@@ -14,6 +14,7 @@ class Competitor extends Model
     protected $fillable = [
         'id_user',
         'cpf',
+        'sexo',
         'birth_date',
         'weight',
         'height'
