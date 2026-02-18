@@ -16,7 +16,7 @@ class Event extends Model
         'title',
         'description',
         'event_date',
-        'vacances',
+        'vacancies',
         'route_km',
         'route_description'
     ];

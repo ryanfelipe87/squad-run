@@ -27,6 +27,6 @@ class CompetitorController extends Controller
     public function createCompetitor(CompetitorRegisterRequest $request){
         $data = $request->validated();
         $response = $this->competitorService->createCompetitor($data);
-        return response()->json($response);
+        return response()->json($response, 201);
     }
 }
