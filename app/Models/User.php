@@ -51,7 +51,7 @@ class User extends Authenticatable
     ];
 
     public function organization(){
-        return $this->hasOne(Organization::class);
+        return $this->hasOne(Organization::class, 'id_user');
     }
 
     public function competitor(){

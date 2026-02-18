@@ -24,9 +24,9 @@ class OrganizationController extends Controller
         return response()->json($response);
     }
 
-    public function create(OrganizationRegisterRequest $request){
+    public function createOrganization(OrganizationRegisterRequest $request){
         $data = $request->validated();
         $response = $this->organizationService->createOrganization($data);
-        return response()->json($response);
+        return response()->json($response, 201);
     }
 }

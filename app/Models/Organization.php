@@ -20,4 +20,8 @@ class Organization extends Model
         'zip_code',
         'description'
     ];
+
+    public function events(){
+        return $this->hasMany(Event::class, 'id_organization');
+    }
 }
