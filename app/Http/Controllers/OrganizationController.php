@@ -14,7 +14,7 @@ class OrganizationController extends Controller
         $this->organizationService = $organizationService;
     }
 
-    public function index($id){
+    public function getOrganizationById($id){
         $response = $this->organizationService->getOrganizationById($id);
         return response()->json($response);
     }
