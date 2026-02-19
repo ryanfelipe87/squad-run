@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\User;
+use DomainException;
 use Illuminate\Support\Facades\Hash;
 
 class RegisterUsersService {
@@ -38,6 +39,33 @@ class RegisterUsersService {
         return [
             'message' => $message,
             'user' => $user
+        ];
+    }
+
+    public function updateUserById(int $id, array $data) : array {
+        $user = User::find($id);
+
+        if(!$user)
+            throw new DomainException('User not found with id: ' . $id);
+
+        $user->update($data);
+
+        return [
+            'message' => 'User updated successfully.',
+            'user' => $user
+        ];
+    }
+
+    public function deleteUserById(int $id) : array {
+        $user = User::find($id);
+
+        if(!$user)
+            throw new DomainException('User not found with id: ' . $id);
+
+        $user->delete();
+
+        return [
+            'message' => 'User deleted successfully.'
         ];
     }
 }

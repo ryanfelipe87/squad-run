@@ -25,6 +25,8 @@ Route::middleware('auth:sanctum')->group(function(){
 
     Route::get('/users/all', [RegisterUsersController::class, 'getAllUsers'])->name('users.all');
     Route::get('/user/{id}', [RegisterUsersController::class, 'getUserById'])->name('user.byId');
+    Route::put('/user/update-user-by-id/{id}', [RegisterUsersController::class, 'updateUserById'])->name('user.updateUserById');
+    Route::delete('/user/delete-user-by-id/{id}', [RegisterUsersController::class, 'deleteUserById'])->name('user.deleteUserById');
 
     Route::get('/organizations/all', [OrganizationController::class, 'allOrganizations'])->name('organizations.all');
     Route::post('/organization/create', [OrganizationController::class, 'createOrganization'])->name('organization.create');
