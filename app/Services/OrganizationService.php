@@ -67,6 +67,9 @@ class OrganizationService {
         if(!$organization)
             throw new DomainException('Organization not found with id: ' . $id);
 
+        if($organization->events()->count() > 0)
+            throw new DomainException('Cannot delete organization with associated events.');
+
         $organization->delete();
 
         return [

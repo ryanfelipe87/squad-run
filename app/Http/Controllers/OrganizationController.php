@@ -61,6 +61,10 @@ class OrganizationController extends Controller
         } catch(DomainException $e){
             return response()->json([
                 'message' => $e->getMessage()
+            ], 403);
+        } catch(DomainException $e){
+            return response()->json([
+                'message' => $e->getMessage()
             ], 404);
         } catch(Exception $e){
             $idError = logErro($e->getMessage());

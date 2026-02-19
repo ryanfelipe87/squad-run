@@ -43,4 +43,31 @@ class EventService {
             'data' => $data->toArray()
         ];
     }
+
+    public function updateEvent(int $id, array $data) : array {
+        $event = Event::find($id);
+
+        if(!$event)
+            throw new \Exception('Event not found with id: ' . $id);
+
+        $event->update($data);
+
+        return [
+            'message' => 'Event updated successfully.',
+            'data' => $event->toArray()
+        ];
+    }
+
+    public function deleteEvent(int $id) : array {
+        $event = Event::find($id);
+
+        if(!$event)
+            throw new \Exception('Event not found with id: ' . $id);
+
+        $event->delete();
+
+        return [
+            'message' => 'Event deleted successfully.'
+        ];
+    }
 }
