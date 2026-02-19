@@ -4,8 +4,10 @@ namespace App\Providers;
 
 // use Illuminate\Support\Facades\Gate;
 
+use App\Models\Competitor;
 use App\Models\Event;
 use App\Models\Organization;
+use App\Policies\CompetitorPolicy;
 use App\Policies\EventPolicy;
 use App\Policies\OrganizationPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
@@ -19,7 +21,8 @@ class AuthServiceProvider extends ServiceProvider
      */
     protected $policies = [
         Event::class => EventPolicy::class,
-        Organization::class => OrganizationPolicy::class
+        Organization::class => OrganizationPolicy::class,
+        Competitor::class => CompetitorPolicy::class
     ];
 
     /**
