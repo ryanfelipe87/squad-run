@@ -31,6 +31,8 @@ Route::middleware('auth:sanctum')->group(function(){
     Route::get('/organizations/all', [OrganizationController::class, 'allOrganizations'])->name('organizations.all');
     Route::post('/organization/create', [OrganizationController::class, 'createOrganization'])->name('organization.create');
     Route::get('/organization/{id}', [OrganizationController::class, 'getOrganizationById'])->name('organization.byId');
+    Route::put('/organization/update-organization-by-id/{id}', [OrganizationController::class, 'updateOrganization'])->name('organization.updateOrganization');
+    Route::delete('/organization/delete-organization-by-id/{id}', [OrganizationController::class, 'deleteOrganization'])->name('organization.deleteOrganization');
 
     Route::get('/competitors/all', [CompetitorController::class, 'allCompetitors'])->name('competitors.all');
     Route::get('/competitor/{id}', [CompetitorController::class, 'getCompetitorById'])->name('competitor.byId');
