@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\EventRegisterRequest;
+use App\Models\Event;
 use App\Services\EventService;
 use Illuminate\Http\Request;
 
@@ -20,11 +21,13 @@ class EventController extends Controller
     }
 
     public function getAllEvents(){
+        $this->authorize('viewAny', Event::class);
         $response = $this->eventService->getAllEvents();
         return response()->json($response);
     }
 
     public function createEvent(EventRegisterRequest $request){
+        $this->authorize('create', Event::class);
         $data = $request->validated();
         $response = $this->eventService->createEvent($data);
         return response()->json($response, 201);

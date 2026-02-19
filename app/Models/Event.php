@@ -20,4 +20,8 @@ class Event extends Model
         'route_km',
         'route_description'
     ];
+
+    public function organization(){
+        return $this->belongsTo(Organization::class, 'id_organization');
+    }
 }
