@@ -25,18 +25,26 @@ Route::middleware('auth:sanctum')->group(function(){
 
     Route::get('/users/all', [RegisterUsersController::class, 'getAllUsers'])->name('users.all');
     Route::get('/user/{id}', [RegisterUsersController::class, 'getUserById'])->name('user.byId');
+    Route::put('/user/update-user-by-id/{id}', [RegisterUsersController::class, 'updateUserById'])->name('user.updateUserById');
+    Route::delete('/user/delete-user-by-id/{id}', [RegisterUsersController::class, 'deleteUserById'])->name('user.deleteUserById');
 
     Route::get('/organizations/all', [OrganizationController::class, 'allOrganizations'])->name('organizations.all');
     Route::post('/organization/create', [OrganizationController::class, 'createOrganization'])->name('organization.create');
     Route::get('/organization/{id}', [OrganizationController::class, 'getOrganizationById'])->name('organization.byId');
+    Route::put('/organization/update-organization-by-id/{id}', [OrganizationController::class, 'updateOrganization'])->name('organization.updateOrganization');
+    Route::delete('/organization/delete-organization-by-id/{id}', [OrganizationController::class, 'deleteOrganization'])->name('organization.deleteOrganization');
 
     Route::get('/competitors/all', [CompetitorController::class, 'allCompetitors'])->name('competitors.all');
     Route::get('/competitor/{id}', [CompetitorController::class, 'getCompetitorById'])->name('competitor.byId');
     Route::post('/competitor/create', [CompetitorController::class, 'createCompetitor'])->name('competitor.create');
+    Route::put('/competitor/update/{id}', [CompetitorController::class, 'updateCompetitor'])->name('competitor.update');
+    Route::delete('/competitor/delete/{id}', [CompetitorController::class, 'deleteCompetitor'])->name('competitor.delete');
 
     Route::get('/events/all', [EventController::class, 'getAllEvents'])->name('events.all');
     Route::get('/event/{id}', [EventController::class, 'getEventById'])->name('event.byId');
     Route::post('/event/create', [EventController::class, 'createEvent'])->name('event.create');
+    Route::put('/event/update-event-by-id/{id}', [EventController::class, 'updateEvent'])->name('event.updateEvent');
+    Route::delete('/event/delete-event-by-id/{id}', [EventController::class, 'deleteEvent'])->name('event.deleteEvent');
 });
 
 Route::get('/login', [LoginController::class, 'index'])->name('login');
