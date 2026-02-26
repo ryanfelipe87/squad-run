@@ -2,6 +2,7 @@
 
 namespace App\Policies;
 
+use App\Enums\UsersRoleEnum;
 use App\Models\Competitor;
 use App\Models\User;
 
@@ -13,10 +14,10 @@ class CompetitorPolicy
     public function __construct(){}
 
     public function update(User $user, Competitor $competitor) : bool {
-        return $user->id === $competitor->id_user || $competitor->event->organization->id_user === $user->id;
+        return $competitor->id_user === $user->id && $user->role === UsersRoleEnum::PARTICIPANT;
     }
 
     public function delete(User $user, Competitor $competitor) : bool {
-        return $user->id === $competitor->id_user || $competitor->event->organization->id_user === $user->id;
+        return $competitor->id_user === $user->id && $user->role === UsersRoleEnum::PARTICIPANT;
     }
 }
