@@ -18,10 +18,15 @@ class Event extends Model
         'event_date',
         'vacancies',
         'route_km',
-        'route_description'
+        'route_description',
+        'status'
     ];
 
     public function organization(){
         return $this->belongsTo(Organization::class, 'id_organization');
+    }
+
+    public function registrations(){
+        return $this->hasMany(Registrations::class, 'id_event');
     }
 }

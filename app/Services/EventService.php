@@ -35,7 +35,8 @@ class EventService {
             'event_date' => $data['event_date'],
             'vacancies' => $data['vacancies'],
             'route_km' => $data['route_km'],
-            'route_description' => $data['route_description']
+            'route_description' => $data['route_description'],
+            'status' => $data['status']
         ]);
 
         return [

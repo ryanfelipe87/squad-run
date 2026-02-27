@@ -19,4 +19,8 @@ class Competitor extends Model
         'weight',
         'height'
     ];
+
+    public function registrations(){
+        return $this->hasMany(Registrations::class, 'id_competitor');
+    }
 }
