@@ -8,5 +8,4 @@ enum StatusEventsEnum : string {
     case DRAFT = 'draft';
     case FINISHED = 'finished';
     case CANCELED = 'canceled';
-    case CONFIRMED = 'confirmed';
 }

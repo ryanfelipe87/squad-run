@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Competitor;
+use App\Models\Event;
 use App\Services\EnrollEventCompetitorService;
 use DomainException;
 use Exception;
@@ -19,7 +20,8 @@ class EnrollEventCompetitorController extends Controller
     public function subscribeEvent(Request $request, $eventId){
         try{
             $this->authorize('subscribeEvent', Competitor::class);
-            $response = $this->enrollService->subscribeEvent($eventId);
+            $event = Event::findOrFail($eventId);
+            $response = $this->enrollService->subscribeEvent($event);
         }catch(DomainException $e){
             return response()->json([
                 'message' => $e->getMessage()

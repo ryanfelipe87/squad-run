@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\RegistrationStatusEnum;
 use App\Enums\StatusEventsEnum;
 use App\Models\Competitor;
 use App\Models\Event;
@@ -30,13 +31,13 @@ class EnrollEventCompetitorService
                 ->lockForUpdate()
                 ->first();
 
-            if ($eventLocked->registrations()->count() >= $eventLocked->vacancies) {
+            if ($eventLocked->registrations()->lockForUpdate()->count() >= $eventLocked->vacancies) {
                 throw new DomainException('No vacancies available for this event.');
             }
 
             $registration = $eventLocked->registrations()->create([
                 'id_competitor' => $competitor->id,
-                'status' => StatusEventsEnum::CONFIRMED,
+                'status' => RegistrationStatusEnum::CONFIRMED,
                 'total_time' => null,
                 'traveled_km' => null
             ]);
