@@ -123,4 +123,8 @@ class EventController extends Controller
             'data' => $response
         ], 200);
     }
+
+    public function getRanking(Event $event){
+        return $this->eventService->getRanking($event);
+    }
 }

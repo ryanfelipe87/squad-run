@@ -15,6 +15,7 @@ class Registrations extends Model
         'id_event',
         'id_competitor',
         'status',
+        'position',
         'total_time',
         'traveled_km'
     ];

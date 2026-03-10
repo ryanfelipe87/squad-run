@@ -109,7 +109,16 @@ class EventService {
         $registration->update([
             'total_time' => $dados['total_time'],
             'traveled_km' => $dados['traveled_km'],
+            'position' => $dados['position'],
             'status' => RegistrationStatusEnum::FINISHED
         ]);
+    }
+
+    public function getRanking(Event $event) : array {
+        return $event->registrations()
+                ->with('competitor.user')
+                ->whereNotNull('total_time')
+                ->orderBy('total_time')
+                ->get();
     }
 }
