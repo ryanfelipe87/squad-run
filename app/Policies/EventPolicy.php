@@ -2,6 +2,7 @@
 
 namespace App\Policies;
 
+use App\Enums\StatusEventsEnum;
 use App\Enums\UsersRoleEnum;
 use App\Models\Event;
 use App\Models\User;
@@ -26,6 +27,10 @@ class EventPolicy
     }
 
     public function delete(User $user, Event $event) : bool{
+        return $user->role === UsersRoleEnum::ORGANIZATOR && $event->organization->id_user === $user->id;
+    }
+
+    public function finish(User $user, Event $event) : bool {
         return $user->role === UsersRoleEnum::ORGANIZATOR && $event->organization->id_user === $user->id;
     }
 }

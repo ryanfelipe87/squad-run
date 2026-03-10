@@ -1,7 +1,10 @@
 <?php
 namespace App\Services;
 
+use App\Enums\RegistrationStatusEnum;
 use App\Models\Event;
+use App\Enums\StatusEventsEnum;
+use DomainException;
 use Illuminate\Support\Facades\Auth;
 
 class EventService {
@@ -36,7 +39,7 @@ class EventService {
             'vacancies' => $data['vacancies'],
             'route_km' => $data['route_km'],
             'route_description' => $data['route_description'],
-            'status' => $data['status']
+            'status' => StatusEventsEnum::PUBLISHED
         ]);
 
         return [
@@ -70,5 +73,43 @@ class EventService {
         return [
             'message' => 'Event deleted successfully.'
         ];
+    }
+
+    public function finishEvent(Event $event) : void {
+        if($event->status !== StatusEventsEnum::CLOSED) {
+            throw new \Exception('Event must be closed before finishing.');
+        }
+
+        $event->update([
+            'status' => StatusEventsEnum::FINISHED
+        ]);
+    }
+
+    public function finishEventsByOrganization(int $idOrganization) : void {
+        $events = Event::where('id_organization', $idOrganization)
+                        ->where('status', StatusEventsEnum::CLOSED)
+                        ->get();
+
+        foreach($events as $event) {
+            $this->finishEvent($event);
+        }
+    }
+
+    public function registerResult(Event $event, array $dados) : void {
+        if($event->status !== StatusEventsEnum::CLOSED){
+            throw new DomainException('Event is not ready for results.');
+        }
+
+        $registration = $event->registrations()->where('id_competitor', $dados['id_competitor'])->firstOrFail();
+
+        if($registration->status === RegistrationStatusEnum::FINISHED){
+            throw new DomainException('Result already registered.');
+        }
+
+        $registration->update([
+            'total_time' => $dados['total_time'],
+            'traveled_km' => $dados['traveled_km'],
+            'status' => RegistrationStatusEnum::FINISHED
+        ]);
     }
 }
