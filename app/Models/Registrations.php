@@ -19,4 +19,8 @@ class Registrations extends Model
         'total_time',
         'traveled_km'
     ];
+
+    public function event(){
+        return $this->belongsTo(Event::class, 'id_event');
+    }
 }

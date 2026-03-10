@@ -55,6 +55,6 @@ class User extends Authenticatable
     }
 
     public function competitor(){
-        return $this->hasOne(Competitor::class);
+        return $this->hasOne(Competitor::class, 'id_user');
     }
 }

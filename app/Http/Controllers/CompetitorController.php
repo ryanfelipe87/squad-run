@@ -69,4 +69,19 @@ class CompetitorController extends Controller
         }
         return response()->json($response, 200);
     }
+
+    public function getCompetitorEvents(){
+        try{
+            $response = $this->competitorService->myEvents();
+        }catch(Exception $e){
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 500);
+        }
+
+        return response()->json([
+            'message' => 'Events returns successfully.',
+            'data' => $response
+        ], 200);
+    }
 }

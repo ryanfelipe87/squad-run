@@ -19,7 +19,7 @@ class EnrollEventCompetitorService
         $competitor = Competitor::where('id_user', $user->id)->first();
         if(!$competitor) throw new DomainException('User is not a competitor.');
 
-        if($event->status !== StatusEventsEnum::PUBLISHED) throw new DomainException('Event is not available for subscription.');
+        if($event->status !== StatusEventsEnum::PUBLISHED->value) throw new DomainException('Event is not available for subscription.');
 
         if($event->event_date < now()) throw new DomainException('Event date has already passed.');
 
@@ -31,15 +31,17 @@ class EnrollEventCompetitorService
                 ->lockForUpdate()
                 ->first();
 
-            if ($eventLocked->registrations()->lockForUpdate()->count() >= $eventLocked->vacancies) {
+            $registrationsCount = $eventLocked->registrations()->lockForUpdate()->get()->count();
+
+            if ($registrationsCount >= $eventLocked->vacancies) {
                 throw new DomainException('No vacancies available for this event.');
             }
 
             $registration = $eventLocked->registrations()->create([
                 'id_competitor' => $competitor->id,
                 'status' => RegistrationStatusEnum::CONFIRMED,
-                'total_time' => null,
-                'traveled_km' => null
+                'total_time' => 0.0,
+                'traveled_km' => 0.0
             ]);
 
             return [

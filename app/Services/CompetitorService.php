@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Competitor;
 use DomainException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 
 class CompetitorService {
@@ -15,7 +16,7 @@ class CompetitorService {
     }
 
     public function getCompetitorById(int $id) : array {
-        $competitor = Competitor::find($id);
+        $competitor = Competitor::findOrFail($id);
         $message = $competitor ? 'Competitor found successfully.' : 'Competitor not found.';
         return [
             'message' => $message,
@@ -42,7 +43,7 @@ class CompetitorService {
     }
 
     public function updateCompetitor(int $id, array $data) : array {
-        $competitor = Competitor::find($id);
+        $competitor = Competitor::findOrFail($id);
 
         if(!$competitor) throw new ModelNotFoundException('Competitor not found.');
 
@@ -55,7 +56,7 @@ class CompetitorService {
     }
 
     public function deleteCompetitor(int $id) : array {
-        $competitor = Competitor::find($id);
+        $competitor = Competitor::findOrFail($id);
 
         if(!$competitor) throw new ModelNotFoundException('Competitor not found.');
 
@@ -64,5 +65,11 @@ class CompetitorService {
         return [
             'message' => 'Competitor deleted successfully.'
         ];
+    }
+
+    public function myEvents() : Collection {
+        $competitor = Auth::user()->competitor;
+
+        return $competitor->registrations()->with('event')->get()->pluck('event');
     }
 }
