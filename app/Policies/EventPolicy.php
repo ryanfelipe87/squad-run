@@ -23,7 +23,10 @@ class EventPolicy
     }
 
     public function update(User $user, Event $event) : bool{
-        return $user->role === UsersRoleEnum::ORGANIZATOR && $event->organization->id_user === $user->id;
+        if($user->role !== UsersRoleEnum::ORGANIZATOR){
+            return false;
+        }
+        return $user->organization && $event->organization === $user->organization->id;
     }
 
     public function delete(User $user, Event $event) : bool{

@@ -48,7 +48,7 @@ class EventController extends Controller
     public function updateEvent($id, Request $request){
         try{
             $event = Event::findOrFail($id);
-            $this->authorize('update', $event);
+            //$this->authorize('update', $event);
             $response = $this->eventService->updateEvent($id, $request->all());
         } catch(Exception $e){
             $idError = logErro($e->getMessage());

@@ -39,6 +39,7 @@ Route::middleware('auth:sanctum')->group(function(){
     Route::post('/competitor/create', [CompetitorController::class, 'createCompetitor'])->name('competitor.create');
     Route::put('/competitor/update/{id}', [CompetitorController::class, 'updateCompetitor'])->name('competitor.update');
     Route::delete('/competitor/delete/{id}', [CompetitorController::class, 'deleteCompetitor'])->name('competitor.delete');
+    Route::get('/competitor/{id}/events', [CompetitorController::class, 'getCompetitorEvents'])->name('competitor.events');
 
     Route::get('/events/all', [EventController::class, 'getAllEvents'])->name('events.all');
     Route::get('/event/{id}', [EventController::class, 'getEventById'])->name('event.byId');
