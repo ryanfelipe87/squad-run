@@ -26,7 +26,8 @@ class EventPolicy
         if($user->role !== UsersRoleEnum::ORGANIZATOR){
             return false;
         }
-        return $user->organization && $event->organization === $user->organization->id;
+
+        return $user->organization && $event->id_organization == $user->organization->id;
     }
 
     public function delete(User $user, Event $event) : bool{
