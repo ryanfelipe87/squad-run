@@ -17,15 +17,14 @@ class EnrollEventCompetitorController extends Controller
         $this->enrollService = $enrollService;
     }
 
-    public function subscribeEvent(Request $request, $eventId){
+    public function subscribeEvent(Event $event){
         try{
-            $this->authorize('subscribeEvent', Competitor::class);
-            $event = Event::findOrFail($eventId);
+            $this->authorize('subscribeEvent', $event);
             $response = $this->enrollService->subscribeEvent($event);
         }catch(DomainException $e){
             return response()->json([
                 'message' => $e->getMessage()
-            ], 400);
+            ], 422);
         }catch(Exception $e){
             $idError = logErro($e->getMessage());
             return response()->json([

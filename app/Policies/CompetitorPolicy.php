@@ -22,8 +22,4 @@ class CompetitorPolicy
     public function delete(User $user, Competitor $competitor) : bool {
         return $competitor->id_user === $user->id && $user->role === UsersRoleEnum::PARTICIPANT;
     }
-
-    public function subscribeEvent(User $user, Event $event) : bool {
-        return $user->role === UsersRoleEnum::PARTICIPANT && $event->status === StatusEventsEnum::PUBLISHED;
-    }
 }

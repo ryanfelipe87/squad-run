@@ -49,7 +49,7 @@ class CompetitorController extends Controller
                 'error_id' => $idError
             ], 500);
         }
-        
+
         return response()->json($response, 200);
     }
 
