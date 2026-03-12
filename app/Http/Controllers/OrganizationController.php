@@ -7,6 +7,7 @@ use App\Models\Organization;
 use App\Services\OrganizationService;
 use DomainException;
 use Exception;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\Request;
 
 class OrganizationController extends Controller
@@ -42,7 +43,11 @@ class OrganizationController extends Controller
             return response()->json([
                 'message' => $e->getMessage()
             ], 404);
-        } catch(Exception $e){
+        }catch(AuthorizationException $e){
+            return response()->json([
+                'message' => 'Unauthorized to update this organization.'
+            ], 403);
+        }catch(Exception $e){
             $idError = logErro($e->getMessage());
             return response()->json([
                 'message' => 'An error occurred while updating the organization.',
@@ -66,6 +71,10 @@ class OrganizationController extends Controller
             return response()->json([
                 'message' => $e->getMessage()
             ], 404);
+        } catch(AuthorizationException $e){
+            return response()->json([
+                'message' => 'Unauthorized to delete this organization.'
+            ], 403);
         } catch(Exception $e){
             $idError = logErro($e->getMessage());
             return response()->json([

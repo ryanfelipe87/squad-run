@@ -7,6 +7,7 @@ use App\Models\Event;
 use App\Services\EventService;
 use DomainException;
 use Exception;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -34,7 +35,11 @@ class EventController extends Controller
             $this->authorize('create', Event::class);
             $data = $request->validated();
             $response = $this->eventService->createEvent($data);
-        } catch(Exception $e){
+        } catch(AuthorizationException $e){
+            return response()->json([
+                'message' => 'Unauthorized to create an event.'
+            ], 403);
+        }catch(Exception $e){
             $idError = logErro($e->getMessage());
             return response()->json([
                 'message' => 'An error occurred while creating the event.',
@@ -50,7 +55,11 @@ class EventController extends Controller
             $event = Event::findOrFail($id);
             $this->authorize('update', $event);
             $response = $this->eventService->updateEvent($id, $request->all());
-        } catch(Exception $e){
+        } catch(AuthorizationException $e){
+            return response()->json([
+                'message' => 'Unauthorized to update this event.'
+            ], 403);
+        }catch(Exception $e){
             $idError = logErro($e->getMessage());
             return response()->json([
                 'message' => 'An error occurred while updating the event.',
@@ -66,7 +75,11 @@ class EventController extends Controller
             $event = Event::findOrFail($id);
             $this->authorize('delete', $event);
             $response = $this->eventService->deleteEvent($id);
-        } catch(Exception $e){
+        } catch(AuthorizationException $e){
+            return response()->json([
+                'message' => 'Unauthorized to delete this event.'
+            ], 403);
+        }catch(Exception $e){
             $idError = logErro($e->getMessage());
             return response()->json([
                 'message' => 'An error occurred while deleting the event.',
@@ -90,6 +103,10 @@ class EventController extends Controller
 
             $this->authorize('finish', Event::class);
             $this->eventService->finishEventsByOrganization($organization->id);
+        }catch(AuthorizationException $e){
+            return response()->json([
+                'message' => 'Unauthorized to finish events.'
+            ], 403);
         }catch(Exception $e){
             $idError = logErro($e->getMessage());
             return response()->json([
@@ -110,7 +127,11 @@ class EventController extends Controller
             $response = $this->eventService->registerResult($event, $request->all());
         }catch(DomainException $e){
             return response()->json(['message' => $e->getMessage()], 422);
-        } catch(Exception $e){
+        }catch(AuthorizationException $e){
+            return response()->json([
+                'message' => 'Unauthorized to register result for this event.'
+            ], 403);
+        }catch(Exception $e){
             $idError = logErro($e->getMessage());
             return response()->json([
                 'message' => 'An error occurred while registering the result.',
