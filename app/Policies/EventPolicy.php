@@ -37,4 +37,8 @@ class EventPolicy
     public function finish(User $user, Event $event) : bool {
         return $user->role === UsersRoleEnum::ORGANIZATOR && $event->organization->id_user === $user->id;
     }
+
+    public function subscribeEvent(User $user, Event $event) : bool {
+        return $user->role->value === UsersRoleEnum::PARTICIPANT->value && $event->status === StatusEventsEnum::PUBLISHED->value;
+    }
 }
