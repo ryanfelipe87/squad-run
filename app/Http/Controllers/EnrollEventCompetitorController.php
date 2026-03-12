@@ -7,6 +7,7 @@ use App\Models\Event;
 use App\Services\EnrollEventCompetitorService;
 use DomainException;
 use Exception;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\Request;
 
 class EnrollEventCompetitorController extends Controller
@@ -25,6 +26,10 @@ class EnrollEventCompetitorController extends Controller
             return response()->json([
                 'message' => $e->getMessage()
             ], 422);
+        }catch(AuthorizationException $e){
+            return response()->json([
+                'message' => 'Unauthorized to subscribe to this event.'
+            ], 403);
         }catch(Exception $e){
             $idError = logErro($e->getMessage());
             return response()->json([

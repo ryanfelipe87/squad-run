@@ -7,6 +7,7 @@ use App\Models\Competitor;
 use App\Services\CompetitorService;
 use DomainException;
 use Exception;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 
@@ -42,6 +43,10 @@ class CompetitorController extends Controller
             $response = $this->competitorService->updateCompetitor($id, $data);
         }catch(ModelNotFoundException $e){
             return response()->json(['message' => 'Competitor not found.'], 404);
+        }catch(AuthorizationException $e){
+            return response()->json([
+                'message' => 'Unauthorized to update this competitor.'
+            ], 403);
         }catch(Exception $e){
             $idError = logErro($e->getMessage());
             return response()->json([
@@ -60,6 +65,10 @@ class CompetitorController extends Controller
             $response = $this->competitorService->deleteCompetitor($id);
         }catch(ModelNotFoundException $e){
             return response()->json(['message' => 'Competitor not found.'], 404);
+        }catch(AuthorizationException $e){
+            return response()->json([
+                'message' => 'Unauthorized to delete this competitor.'
+            ], 403);
         }catch(Exception $e){
             $idError = logErro($e->getMessage());
             return response()->json([
