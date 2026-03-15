@@ -27,4 +27,8 @@ class Competitor extends Model
     public function status(){
         return $this->hasOne(CompetitorData::class, 'id_competitor');
     }
+
+    public function user(){
+        return $this->belongsTo(User::class, 'id_user');
+    }
 }
