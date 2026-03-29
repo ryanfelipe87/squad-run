@@ -6,6 +6,7 @@ use App\Models\Event;
 use App\Enums\StatusEventsEnum;
 use App\Jobs\UpdateCompetitorStatusJob;
 use DomainException;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\Auth;
 
 class EventService {
@@ -76,32 +77,37 @@ class EventService {
         ];
     }
 
-    public function finishEvent(Event $event) : void {
-        if($event->status !== StatusEventsEnum::CLOSED) {
-            throw new \Exception('Event must be closed before finishing.');
-        }
-
-        $event->update([
-            'status' => StatusEventsEnum::FINISHED
-        ]);
-    }
-
     public function finishEventsByOrganization(int $idOrganization) : void {
-        $events = Event::where('id_organization', $idOrganization)
-                        ->where('status', StatusEventsEnum::CLOSED)
-                        ->get();
+        $events = Event::with('organization')
+            ->where('id_organization', $idOrganization)
+            ->where('status', StatusEventsEnum::CLOSED)
+            ->get();
 
         foreach($events as $event) {
             $this->finishEvent($event);
         }
     }
 
+    public function finishEvent(Event $event) : void {
+        if($event->status !== StatusEventsEnum::CLOSED) {
+            throw new \Exception('Event must be closed before finishing.');
+        }
+
+        if($event->organization->id_user != Auth::id()) throw new AuthorizationException('Unauthorized to finish this event.');
+
+        $event->update([
+            'status' => StatusEventsEnum::FINISHED
+        ]);
+    }
+
     public function registerResult(Event $event, array $dados) : void {
-        if($event->status !== StatusEventsEnum::CLOSED){
+        if($event->status !== StatusEventsEnum::FINISHED){
             throw new DomainException('Event is not ready for results.');
         }
 
         $registration = $event->registrations()->where('id_competitor', $dados['id_competitor'])->firstOrFail();
+
+        if(!$registration) throw new DomainException('Registration not found for this competitor in the event.');
 
         if($registration->status === RegistrationStatusEnum::FINISHED){
             throw new DomainException('Result already registered.');
@@ -114,14 +120,14 @@ class EventService {
             'status' => RegistrationStatusEnum::FINISHED
         ]);
 
-        UpdateCompetitorStatusJob::dispatch($dados['id_competitor']);
+        UpdateCompetitorStatusJob::dispatch($dados['id_competitor'], $event->id);
     }
 
     public function getRanking(Event $event) : array {
         return $event->registrations()
-                ->with('competitor.user')
-                ->whereNotNull('total_time')
-                ->orderBy('total_time')
-                ->get();
+            ->with('competitor.user')
+            ->whereNotNull('total_time')
+            ->orderBy('total_time')
+            ->get();
     }
 }

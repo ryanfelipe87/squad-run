@@ -50,6 +50,8 @@ Route::middleware('auth:sanctum')->group(function(){
     Route::put('/event/update-event-by-id/{id}', [EventController::class, 'updateEvent'])->name('event.updateEvent');
     Route::delete('/event/delete-event-by-id/{id}', [EventController::class, 'deleteEvent'])->name('event.deleteEvent');
     Route::get('/event/{id}/ranking', [EventController::class, 'getRanking'])->name('event.ranking');
+    Route::post('/event/{id}/finish', [EventController::class, 'finishEventsByOrganization'])->name('event.finishEvent');
+    Route::post('/event/{id}/register-result', [EventController::class, 'registerResult'])->name('event.registerResult');
 });
 
 Route::get('/login', [LoginController::class, 'index'])->name('login');
