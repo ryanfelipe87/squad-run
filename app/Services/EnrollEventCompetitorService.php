@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\RegistrationStatusEnum;
 use App\Enums\StatusEventsEnum;
+use App\Jobs\SendRegistrationEmailJob;
 use App\Models\Competitor;
 use App\Models\Event;
 use App\Models\Registrations;
@@ -43,6 +44,10 @@ class EnrollEventCompetitorService
                 'total_time' => 0.0,
                 'traveled_km' => 0.0
             ]);
+
+            DB::afterCommit(function() use ($event, $competitor){
+                SendRegistrationEmailJob::dispatch($event, $competitor);
+            });
 
             return [
                 'message' => 'Competitor successfully enrolled in the event.',

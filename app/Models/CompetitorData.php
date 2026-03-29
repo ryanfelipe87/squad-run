@@ -18,4 +18,8 @@ class CompetitorData extends Model
         'best_time',
         'awards_winner'
     ];
+
+    public function competitor(){
+        return $this->belongsTo(Competitor::class, 'id_competitor');
+    }
 }

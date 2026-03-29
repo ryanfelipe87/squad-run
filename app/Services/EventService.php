@@ -4,6 +4,7 @@ namespace App\Services;
 use App\Enums\RegistrationStatusEnum;
 use App\Models\Event;
 use App\Enums\StatusEventsEnum;
+use App\Jobs\UpdateCompetitorStatusJob;
 use DomainException;
 use Illuminate\Support\Facades\Auth;
 
@@ -112,6 +113,8 @@ class EventService {
             'position' => $dados['position'],
             'status' => RegistrationStatusEnum::FINISHED
         ]);
+
+        UpdateCompetitorStatusJob::dispatch($dados['id_competitor']);
     }
 
     public function getRanking(Event $event) : array {
