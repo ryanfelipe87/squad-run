@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\StatusEventsEnum;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -29,4 +30,8 @@ class Event extends Model
     public function registrations(){
         return $this->hasMany(Registrations::class, 'id_event');
     }
+
+    protected $casts = [
+        'status' => StatusEventsEnum::class
+    ];
 }
