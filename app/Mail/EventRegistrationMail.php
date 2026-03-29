@@ -23,18 +23,13 @@ class EventRegistrationMail extends Mailable
         public Competitor $competitor
     ){}
 
-    public function build()
-    {
-        return $this->subject('Inscrição confirmada - SquadRun')->view('emails.event_registration');
-    }
-
     /**
      * Get the message envelope.
      */
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Event Registration Mail',
+            subject: 'Inscrição confirmada - SquadRun',
         );
     }
 
@@ -44,7 +39,7 @@ class EventRegistrationMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'view.name',
+            view: 'emails.event_registration',
         );
     }
 

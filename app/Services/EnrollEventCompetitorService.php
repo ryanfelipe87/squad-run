@@ -45,7 +45,9 @@ class EnrollEventCompetitorService
                 'traveled_km' => 0.0
             ]);
 
-            SendRegistrationEmailJob::dispatch($event, $competitor);
+            DB::afterCommit(function() use ($event, $competitor){
+                SendRegistrationEmailJob::dispatch($event, $competitor);
+            });
 
             return [
                 'message' => 'Competitor successfully enrolled in the event.',
