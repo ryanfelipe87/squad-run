@@ -23,4 +23,8 @@ class Registrations extends Model
     public function event(){
         return $this->belongsTo(Event::class, 'id_event');
     }
+
+    public function competitor(){
+        return $this->belongsTo(Competitor::class, 'id_competitor');
+    }
 }

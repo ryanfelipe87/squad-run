@@ -29,6 +29,7 @@ class SendReminderEmailJob implements ShouldQueue
      */
     public function handle(): void
     {
+        $this->competitor->load('user');
         Mail::to($this->competitor->user->email)->send(new EventReminderMail($this->event, $this->competitor));
     }
 }

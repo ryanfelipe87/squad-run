@@ -28,7 +28,10 @@ class SendEventReminderCommand extends Command
      */
     public function handle()
     {
-        $events = Event::whereDate('event_date', now()->addDay())->where('status', StatusEventsEnum::PUBLISHED)->get();
+        $events = Event::with('registrations.competitor.user')
+            ->whereDate('event_date', now()->addDay())
+            ->where('status', StatusEventsEnum::PUBLISHED)
+            ->get();
 
         foreach($events as $event){
             foreach($event->registrations as $registration){

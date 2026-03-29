@@ -23,18 +23,13 @@ class EventReminderMail extends Mailable
         public Competitor $competitor
     ){}
 
-    public function build()
-    {
-        return $this->subject('Lembrete de evento - SquadRun')->view('emails.event_reminder');
-    }
-
     /**
      * Get the message envelope.
      */
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Event Reminder Mail',
+            subject: 'Lembrete de evento - SquadRun',
         );
     }
 
@@ -44,7 +39,7 @@ class EventReminderMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'view.name',
+            view: 'emails.event_reminder',
         );
     }
 
