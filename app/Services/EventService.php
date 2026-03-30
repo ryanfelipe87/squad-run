@@ -8,6 +8,7 @@ use App\Jobs\UpdateCompetitorStatusJob;
 use DomainException;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class EventService {
 
@@ -84,16 +85,27 @@ class EventService {
             ->get();
 
         foreach($events as $event) {
-            $this->finishEvent($event);
+            DB::transaction(function() use($event){
+                $this->finishEvent($event);
+            });
         }
     }
 
     public function finishEvent(Event $event) : void {
+        $event = Event::with('organization')
+            ->where('id', $event->id)
+            ->lockForUpdate()
+            ->first();
+        
         if($event->status !== StatusEventsEnum::CLOSED) {
             throw new \Exception('Event must be closed before finishing.');
         }
 
         if($event->organization->id_user != Auth::id()) throw new AuthorizationException('Unauthorized to finish this event.');
+
+        $hasPendingResults = $event->registrations()->where('status', '!=', RegistrationStatusEnum::FINISHED)->exists();
+
+        if($hasPendingResults) throw new DomainException('There are still competitor without results.');
 
         $event->update([
             'status' => StatusEventsEnum::FINISHED
@@ -101,13 +113,11 @@ class EventService {
     }
 
     public function registerResult(Event $event, array $dados) : void {
-        if($event->status !== StatusEventsEnum::FINISHED){
+        if($event->status !== StatusEventsEnum::CLOSED){
             throw new DomainException('Event is not ready for results.');
         }
 
-        $registration = $event->registrations()->where('id_competitor', $dados['id_competitor'])->firstOrFail();
-
-        if(!$registration) throw new DomainException('Registration not found for this competitor in the event.');
+        $registration = $event->registrations()->where('id_competitor', $dados['id_competitor'])->lockForUpdate()->firstOrFail();
 
         if($registration->status === RegistrationStatusEnum::FINISHED){
             throw new DomainException('Result already registered.');
