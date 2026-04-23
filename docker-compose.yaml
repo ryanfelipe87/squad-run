@@ -1,0 +1,74 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    container_name: squadrun_app
+    volumes:
+      - ./:/var/www
+    networks:
+      - squadrun_net
+    depends_on:
+      - db
+
+  nginx:
+    image: nginx:alpine
+    container_name: squadrun_nginx
+    ports:
+      - "8000:80"
+    volumes:
+      - ./:/var/www
+      - ./docker/nginx:/etc/nginx/conf.d
+    depends_on:
+      - app
+    networks:
+      - squadrun_net
+
+  db:
+    image: postgres:14
+    container_name: squadrun_db
+    restart: always
+    environment:
+      POSTGRES_DB: squad_run
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1@cofggcvf
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - squadrun_net
+
+  queue:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    container_name: squadrun_queue
+    command: php artisan queue:work --tries=3 --timeout=90
+    volumes:
+      - ./:/var/www
+    depends_on:
+      - db
+    networks:
+      - squadrun_net
+
+  scheduler:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    container_name: squadrun_scheduler
+    command: sh -c "While true; do php artisan schedule:run; sleep 60; done"
+    volumes:
+      - ./:/var/www
+    depends_on:
+      - db
+    networks:
+      - squadrun_net
+
+networks:
+  squadrun_net:
+
+volumes:
+  pgdata:
