@@ -31,9 +31,9 @@ services:
     container_name: squadrun_db
     restart: always
     environment:
-      POSTGRES_DB: squad_run
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 1@cofggcvf
+      POSTGRES_DB: ${DB_DATABASE}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
       - "5433:5432"
     volumes:
