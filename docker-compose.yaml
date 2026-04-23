@@ -46,11 +46,12 @@ services:
       context: .
       dockerfile: docker/php/Dockerfile
     container_name: squadrun_queue
-    command: php artisan queue:work --tries=3 --timeout=90
+    command: php artisan queue:work redis --tries=3 --timeout=90
     volumes:
       - ./:/var/www
     depends_on:
       - db
+      - redis
     networks:
       - squadrun_net
 
@@ -64,6 +65,14 @@ services:
       - ./:/var/www
     depends_on:
       - db
+    networks:
+      - squadrun_net
+
+  redis:
+    image: redis:alpine
+    container_name: squadrun_redis
+    ports:
+      - "6379:6379"
     networks:
       - squadrun_net
 
