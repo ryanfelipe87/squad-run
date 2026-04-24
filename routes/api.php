@@ -46,13 +46,14 @@ Route::middleware('auth:sanctum')->group(function(){
 
     Route::post('/event/{event}/subscribe', [EnrollEventCompetitorController::class, 'subscribeEvent'])->name('enroll.subscribe');
 
-    Route::get('/events/all', [EventController::class, 'getAllEvents'])->name('events.all');
-    Route::get('/event/{id}', [EventController::class, 'getEventById'])->name('event.byId');
-    Route::post('/event/create', [EventController::class, 'createEvent'])->name('event.create');
-    Route::put('/event/update-event-by-id/{id}', [EventController::class, 'updateEvent'])->name('event.updateEvent');
-    Route::delete('/event/delete-event-by-id/{id}', [EventController::class, 'deleteEvent'])->name('event.deleteEvent');
-    Route::get('/event/{id}/ranking', [EventController::class, 'getRanking'])->name('event.ranking');
-    Route::post('/event/{id}/finish', [EventController::class, 'finishEventsByOrganization'])->name('event.finishEvent');
+    Route::get('/events/all', [EventController::class, 'index'])->name('events.all');
+    Route::get('/event/{id}', [EventController::class, 'show'])->name('event.byId');
+    Route::post('/event/create', [EventController::class, 'store'])->name('event.create');
+    Route::put('/event/update-event-by-id/{id}', [EventController::class, 'update'])->name('event.updateEvent');
+    Route::delete('/event/delete-event-by-id/{id}', [EventController::class, 'destroy'])->name('event.deleteEvent');
+    Route::get('/event/{id}/ranking', [EventController::class, 'ranking'])->name('event.ranking');
+    Route::post('/event/{id}/finish', [EventController::class, 'finish'])->name('event.finishEvent');
+    Route::post('/organization/{id}/finish-events', [EventController::class, 'finishAll'])->name('event.finishEventsByOrganization');
     Route::post('/event/{id}/register-result', [EventController::class, 'registerResult'])->name('event.registerResult');
 });
 
