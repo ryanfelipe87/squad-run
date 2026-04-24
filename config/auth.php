@@ -111,5 +111,6 @@ return [
     */
 
     'password_timeout' => 10800,
+    'token_expiration' => 25, // Tempo de expiração do token em minutos
 
 ];
