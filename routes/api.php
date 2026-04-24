@@ -24,6 +24,8 @@ Route::middleware('auth:sanctum')->group(function(){
         return $request->user();
     });
 
+    Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+
     Route::get('/users/all', [RegisterUsersController::class, 'index'])->name('users.all');
     Route::get('/user/{id}', [RegisterUsersController::class, 'show'])->name('user.byId');
     Route::put('/user/update-user-by-id/{id}', [RegisterUsersController::class, 'update'])->name('user.updateUserById');
