@@ -28,14 +28,18 @@ class LoginUser
 
         $user->tokens()->delete();
 
-        $expiresAt = now()->addMinutes(config('auth.token_expiration', 25));
+        $accessExpiresAt = now()->addMinutes(15);
+        $refreshExpiresAt = now()->addDays(7);
 
-        $token = $user->createToken('auth_token', ['*'], $expiresAt)->plainTextToken;
+        $accessToken = $user->createToken('access_token', ['access'], $accessExpiresAt)->plainTextToken;
+
+        $refreshToken = $user->createToken('refresh_token', ['refresh'], $refreshExpiresAt)->plainTextToken;
 
         return [
             'user' => $user,
-            'token' => $token,
-            'expires_at' => $expiresAt->toDateTimeString()
+            'access_token' => $accessToken,
+            'refresh_token' => $refreshToken,
+            'expires_at' => $accessExpiresAt
         ];
     }
 }
