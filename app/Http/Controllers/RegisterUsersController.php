@@ -2,82 +2,87 @@
 
 namespace App\Http\Controllers;
 
+use App\DTOs\RegisterUserDTO;
+use App\DTOs\UpdateUserDTO;
 use App\Http\Requests\RegisterValidateRequest;
 use App\Services\RegisterUsersService;
+use App\UseCases\Users\DeleteUser;
+use App\UseCases\Users\GetAllUsers;
+use App\UseCases\Users\GetUserById;
+use App\UseCases\Users\RegisterUser;
+use App\UseCases\Users\UpdateUser;
 use DomainException;
 use Exception;
 use Illuminate\Http\Request;
 
 class RegisterUsersController extends Controller
 {
-    protected $registerUsersService;
-
-    public function __construct(RegisterUsersService $registerUsersService){
-        $this->registerUsersService = $registerUsersService;
-    }
-
-    public function index(){
-        return view('register.register');
-    }
+    public function __construct(
+        private RegisterUser $registerUser,
+        private GetAllUsers $getAllUsers,
+        private GetUserById $getUserById,
+        private UpdateUser $updateUser,
+        private DeleteUser $deleteUser
+    ){}
 
     public function register(RegisterValidateRequest $request){
         try{
-            $data = $request->validated();
-            $response = $this->registerUsersService->register($data);
+            $dto = new RegisterUserDTO(...$request->validated());
+            $user = $this->registerUser->execute($dto);
+            return response()->json([
+                'message' => 'Usuário registrado com sucesso.',
+                'data' => $user
+            ], 201);
+        } catch(DomainException $e){
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 400);
         } catch(Exception $e){
             $idError = logErro($e->getMessage());
             return response()->json([
-                'message' => 'An error occurred while registering the user.',
+                'message' => 'Erro interno.',
                 'error_id' => $idError
             ], 500);
         }
-
-        return response()->json($response, 201);
     }
 
-    public function getAllUsers(){
-        $response = $this->registerUsersService->getAllUsers();
-        return response()->json($response, 200);
+    public function index(){
+        return response()->json([
+            'data' => $this->getAllUsers->execute()
+        ]);
     }
 
-    public function getUserById($id){
-        $response = $this->registerUsersService->getUserById($id);
-        return response()->json($response, 200);
-    }
-
-    public function updateUserById($id, Request $request){
+    public function show($id){
         try{
-            $response = $this->registerUsersService->updateUserById($id, $request->all());
+            return response()->json([
+                'data' => $this->getUserById->execute($id)
+            ]);
+        }catch(DomainException $e){
+            return response()->json(['message' => $e->getMessage()], 404);
+        }
+    }
+
+    public function update($id, Request $request){
+        try{
+            $dto = new UpdateUserDTO(...$request->only(['name', 'email']));
+            return response()->json([
+                'data' => $this->updateUser->execute($id, $dto)
+            ]);
         } catch(DomainException $e){
             return response()->json([
                 'message' => $e->getMessage()
             ], 404);
-        } catch(Exception $e){
-            $idError = logErro($e->getMessage());
-            return response()->json([
-                'message' => 'An error occurred while updating the user.',
-                'error_id' => $idError
-            ], 500);
         }
-
-        return response()->json($response, 200);
     }
 
     public function deleteUserById($id){
         try{
-            $response = $this->registerUsersService->deleteUserById($id);
+            $this->deleteUser->execute($id);
+            return response()->json(['message' => 'Usuário deletado com sucesso.']);
         } catch(DomainException $e){
             return response()->json([
                 'message' => $e->getMessage()
             ], 404);
-        } catch(Exception $e){
-            $idError = logErro($e->getMessage());
-            return response()->json([
-                'message' => 'An error occurred while deleting the user.',
-                'error_id' => $idError
-            ], 500);
         }
-
-        return response()->json($response, 200);
     }
 }
