@@ -58,5 +58,6 @@ Route::middleware('auth:sanctum')->group(function(){
 
 Route::get('/login', [LoginController::class, 'index'])->name('login');
 Route::post('login/authenticate', [LoginController::class, 'login'])->name('login.authenticate');
+Route::post('/refresh', [LoginController::class, 'refresh']);
 Route::get('/register', [RegisterUsersController::class, 'index'])->name('register');
 Route::post('/register/create', [RegisterUsersController::class, 'register'])->name('register.create');
