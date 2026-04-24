@@ -2,95 +2,189 @@
 
 namespace App\Http\Controllers;
 
+use App\DTOs\CompetitorDTO;
+use App\DTOs\UpdateCompetitorDTO;
 use App\Http\Requests\CompetitorRegisterRequest;
-use App\Models\Competitor;
-use App\Services\CompetitorService;
+use App\UseCases\Competitors\DeleteCompetitor;
+use App\UseCases\Competitors\CreateCompetitor;
+use App\UseCases\Competitors\GetAllCompetitors;
+use App\UseCases\Competitors\GetCompetitorById;
+use App\UseCases\Competitors\UpdateCompetitor;
+use App\UseCases\Competitors\GetCompetitorEvents;
 use DomainException;
 use Exception;
 use Illuminate\Auth\Access\AuthorizationException;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 
 class CompetitorController extends Controller
 {
-    protected $competitorService;
+    public function __construct(
+        private CreateCompetitor $createCompetitor,
+        private GetAllCompetitors $getAllCompetitors,
+        private GetCompetitorById $getCompetitorById,
+        private UpdateCompetitor $updateCompetitor,
+        private DeleteCompetitor $deleteCompetitor,
+        private GetCompetitorEvents $getCompetitorEvents
+    ) {}
 
-    public function __construct(CompetitorService $competitorService){
-        $this->competitorService = $competitorService;
-    }
-
-    public function getCompetitorById($id){
-        $response = $this->competitorService->getCompetitorById($id);
-        return response()->json($response);
-    }
-
-    public function allCompetitors(){
-        $response = $this->competitorService->getAllCompetitors();
-        return response()->json($response);
-    }
-
-    public function createCompetitor(CompetitorRegisterRequest $request){
-        $data = $request->validated();
-        $response = $this->competitorService->createCompetitor($data);
-        return response()->json($response, 201);
-    }
-
-    public function updateCompetitor(Request $request, $id){
-        try{
-            $competitor = Competitor::findOrFail($id);
-            $this->authorize('update', $competitor);
-            $data = $request->all();
-            $response = $this->competitorService->updateCompetitor($id, $data);
-        }catch(ModelNotFoundException $e){
-            return response()->json(['message' => 'Competitor not found.'], 404);
-        }catch(AuthorizationException $e){
-            return response()->json([
-                'message' => 'Unauthorized to update this competitor.'
-            ], 403);
-        }catch(Exception $e){
-            $idError = logErro($e->getMessage());
-            return response()->json([
-                'message' => 'An error occurred while updating the competitor.',
-                'error_id' => $idError
-            ], 500);
-        }
-
-        return response()->json($response, 200);
-    }
-
-    public function deleteCompetitor($id){
-        try{
-            $competitor = Competitor::findOrFail($id);
-            $this->authorize('delete', $competitor);
-            $response = $this->competitorService->deleteCompetitor($id);
-        }catch(ModelNotFoundException $e){
-            return response()->json(['message' => 'Competitor not found.'], 404);
-        }catch(AuthorizationException $e){
-            return response()->json([
-                'message' => 'Unauthorized to delete this competitor.'
-            ], 403);
-        }catch(Exception $e){
-            $idError = logErro($e->getMessage());
-            return response()->json([
-                'message' => 'An error occurred while deleting the competitor.',
-                'error_id' => $idError
-            ], 500);
-        }
-        return response()->json($response, 200);
-    }
-
-    public function getCompetitorEvents(){
-        try{
-            $response = $this->competitorService->myEvents();
-        }catch(Exception $e){
-            return response()->json([
-                'message' => $e->getMessage()
-            ], 500);
-        }
+    public function index()
+    {
+        $competitors = $this->getAllCompetitors->execute();
 
         return response()->json([
-            'message' => 'Events returns successfully.',
-            'data' => $response
-        ], 200);
+            'data' => $competitors
+        ]);
+    }
+
+    public function show($id)
+    {
+        try {
+            $competitor = $this->getCompetitorById->execute($id);
+
+            return response()->json([
+                'data' => $competitor
+            ]);
+
+        } catch (DomainException $e) {
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 404);
+        }
+    }
+
+    public function store(CompetitorRegisterRequest $request)
+    {
+        try {
+            $dto = new CompetitorDTO(
+                ...$request->only([
+                    'cpf',
+                    'sexo',
+                    'birth_date',
+                    'height',
+                    'weight'
+                ])
+            );
+
+            $competitor = $this->createCompetitor->execute($dto);
+
+            return response()->json([
+                'message' => 'Competidor criado com sucesso',
+                'data' => $competitor
+            ], 201);
+
+        } catch (DomainException $e) {
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 422);
+
+        } catch (Exception $e) {
+            $idError = logErro($e->getMessage());
+
+            return response()->json([
+                'message' => 'Erro interno',
+                'error_id' => $idError
+            ], 500);
+        }
+    }
+
+    public function update(Request $request, $id)
+    {
+        try {
+            $competitor = $this->getCompetitorById->execute($id);
+
+            $this->authorize('update', $competitor);
+
+            $dto = new UpdateCompetitorDTO(
+                ...$request->only([
+                    'cpf',
+                    'sexo',
+                    'birth_date',
+                    'height',
+                    'weight'
+                ])
+            );
+
+            $updated = $this->updateCompetitor->execute($id, $dto);
+
+            return response()->json([
+                'message' => 'Competidor atualizado com sucesso',
+                'data' => $updated
+            ]);
+
+        } catch (DomainException $e) {
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 404);
+
+        } catch (AuthorizationException $e) {
+            return response()->json([
+                'message' => 'Não autorizado'
+            ], 403);
+
+        } catch (Exception $e) {
+            $idError = logErro($e->getMessage());
+
+            return response()->json([
+                'message' => 'Erro interno',
+                'error_id' => $idError
+            ], 500);
+        }
+    }
+
+    public function destroy($id)
+    {
+        try {
+            $competitor = $this->getCompetitorById->execute($id);
+
+            $this->authorize('delete', $competitor);
+
+            $this->deleteCompetitor->execute($id);
+
+            return response()->json([
+                'message' => 'Competidor deletado com sucesso'
+            ]);
+
+        } catch (DomainException $e) {
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 404);
+
+        } catch (AuthorizationException $e) {
+            return response()->json([
+                'message' => 'Não autorizado'
+            ], 403);
+
+        } catch (Exception $e) {
+            $idError = logErro($e->getMessage());
+
+            return response()->json([
+                'message' => 'Erro interno',
+                'error_id' => $idError
+            ], 500);
+        }
+    }
+
+    public function myEvents()
+    {
+        try {
+            $events = $this->getCompetitorEvents->execute(auth()->id());
+
+            return response()->json([
+                'data' => $events
+            ]);
+
+        } catch (DomainException $e) {
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 404);
+
+        } catch (Exception $e) {
+            $idError = logErro($e->getMessage());
+
+            return response()->json([
+                'message' => 'Erro interno',
+                'error_id' => $idError
+            ], 500);
+        }
     }
 }

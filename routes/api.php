@@ -37,12 +37,12 @@ Route::middleware('auth:sanctum')->group(function(){
     Route::put('/organization/update-organization-by-id/{id}', [OrganizationController::class, 'updateOrganization'])->name('organization.updateOrganization');
     Route::delete('/organization/delete-organization-by-id/{id}', [OrganizationController::class, 'deleteOrganization'])->name('organization.deleteOrganization');
 
-    Route::get('/competitors/all', [CompetitorController::class, 'allCompetitors'])->name('competitors.all');
-    Route::get('/competitor/my-events', [CompetitorController::class, 'getCompetitorEvents'])->name('competitor.events');
-    Route::get('/competitor/{id}', [CompetitorController::class, 'getCompetitorById'])->name('competitor.byId');
-    Route::post('/competitor/create', [CompetitorController::class, 'createCompetitor'])->name('competitor.create');
-    Route::put('/competitor/update/{id}', [CompetitorController::class, 'updateCompetitor'])->name('competitor.update');
-    Route::delete('/competitor/delete/{id}', [CompetitorController::class, 'deleteCompetitor'])->name('competitor.delete');
+    Route::get('/competitors/all', [CompetitorController::class, 'index'])->name('competitors.all');
+    Route::get('/competitor/my-events', [CompetitorController::class, 'myEvents'])->name('competitor.events');
+    Route::get('/competitor/{id}', [CompetitorController::class, 'show'])->name('competitor.byId');
+    Route::post('/competitor/create', [CompetitorController::class, 'store'])->name('competitor.create');
+    Route::put('/competitor/update/{id}', [CompetitorController::class, 'update'])->name('competitor.update');
+    Route::delete('/competitor/delete/{id}', [CompetitorController::class, 'destroy'])->name('competitor.delete');
 
     Route::post('/event/{event}/subscribe', [EnrollEventCompetitorController::class, 'subscribeEvent'])->name('enroll.subscribe');
 
