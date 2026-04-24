@@ -2,150 +2,190 @@
 
 namespace App\Http\Controllers;
 
+use App\DTOs\CreateEventDTO;
+use App\DTOs\UpdateEventDTO;
+use App\DTOs\RegisterResultDTO;
 use App\Http\Requests\EventRegisterRequest;
-use App\Models\Event;
-use App\Services\EventService;
+use App\UseCases\Events\CreateEvent;
+use App\UseCases\Events\GetAllEvents;
+use App\UseCases\Events\GetEventById;
+use App\UseCases\Events\UpdateEvent;
+use App\UseCases\Events\DeleteEvent;
+use App\UseCases\Events\FinishEvent;
+use App\UseCases\Events\FinishEventsByOrganization;
+use App\UseCases\Events\RegisterResult;
+use App\UseCases\Events\GetRanking;
 use DomainException;
 use Exception;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class EventController extends Controller
 {
-    protected $eventService;
+    public function __construct(
+        private CreateEvent $createEvent,
+        private GetAllEvents $getAllEvents,
+        private GetEventById $getEventById,
+        private UpdateEvent $updateEvent,
+        private DeleteEvent $deleteEvent,
+        private FinishEvent $finishEvent,
+        private FinishEventsByOrganization $finishEventsByOrganization,
+        private RegisterResult $registerResult,
+        private GetRanking $getRanking
+    ) {}
 
-    public function __construct(EventService $eventService){
-        $this->eventService = $eventService;
+    public function index()
+    {
+        return response()->json([
+            'data' => $this->getAllEvents->execute()
+        ]);
     }
 
-    public function getEventById($id){
-        $response = $this->eventService->getEventById($id);
-        return response()->json($response);
-    }
-
-    public function getAllEvents(){
-        $this->authorize('viewAny', Event::class);
-        $response = $this->eventService->getAllEvents();
-        return response()->json($response);
-    }
-
-    public function createEvent(EventRegisterRequest $request){
-        try{
-            $this->authorize('create', Event::class);
-            $data = $request->validated();
-            $response = $this->eventService->createEvent($data);
-        } catch(AuthorizationException $e){
+    public function show($id)
+    {
+        try {
             return response()->json([
-                'message' => 'Unauthorized to create an event.'
-            ], 403);
-        }catch(Exception $e){
-            $idError = logErro($e->getMessage());
-            return response()->json([
-                'message' => 'An error occurred while creating the event.',
-                'error_id' => $idError
-            ], 500);
+                'data' => $this->getEventById->execute($id)
+            ]);
+        } catch (DomainException $e) {
+            return response()->json(['message' => $e->getMessage()], 404);
         }
-
-        return response()->json($response, 201);
     }
 
-    public function updateEvent($id, Request $request){
-        try{
-            $event = Event::findOrFail($id);
+    public function store(EventRegisterRequest $request)
+    {
+        try {
+            $this->authorize('create', \App\Models\Event::class);
+
+            $dto = new CreateEventDTO(
+                ...$request->only([
+                    'title',
+                    'description',
+                    'event_date',
+                    'vacancies',
+                    'route_km',
+                    'route_description'
+                ])
+            );
+
+            $event = $this->createEvent->execute($dto);
+
+            return response()->json(['data' => $event], 201);
+
+        } catch (AuthorizationException $e) {
+            return response()->json(['message' => 'Não autorizado'], 403);
+        } catch (Exception $e) {
+            return response()->json(['message' => 'Erro interno'], 500);
+        }
+    }
+
+    public function update(Request $request, $id)
+    {
+        try {
+            $event = $this->getEventById->execute($id);
+
             $this->authorize('update', $event);
-            $response = $this->eventService->updateEvent($id, $request->all());
-        } catch(AuthorizationException $e){
-            return response()->json([
-                'message' => 'Unauthorized to update this event.'
-            ], 403);
-        }catch(Exception $e){
-            $idError = logErro($e->getMessage());
-            return response()->json([
-                'message' => 'An error occurred while updating the event.',
-                'error_id' => $idError
-            ], 500);
-        }
 
-        return response()->json($response, 200);
+            $dto = new UpdateEventDTO(
+                ...$request->only([
+                    'title',
+                    'description',
+                    'event_date',
+                    'vacancies',
+                    'route_km',
+                    'route_description',
+                    'status'
+                ])
+            );
+
+            return response()->json([
+                'data' => $this->updateEvent->execute($id, $dto)
+            ]);
+
+        } catch (AuthorizationException $e) {
+            return response()->json(['message' => 'Não autorizado'], 403);
+        } catch (DomainException $e) {
+            return response()->json(['message' => $e->getMessage()], 404);
+        }
     }
 
-    public function deleteEvent($id){
-        try{
-            $event = Event::findOrFail($id);
+    public function destroy($id)
+    {
+        try {
+            $event = $this->getEventById->execute($id);
+
             $this->authorize('delete', $event);
-            $response = $this->eventService->deleteEvent($id);
-        } catch(AuthorizationException $e){
-            return response()->json([
-                'message' => 'Unauthorized to delete this event.'
-            ], 403);
-        }catch(Exception $e){
-            $idError = logErro($e->getMessage());
-            return response()->json([
-                'message' => 'An error occurred while deleting the event.',
-                'error_id' => $idError
-            ], 500);
-        }
 
-        return response()->json($response, 200);
+            $this->deleteEvent->execute($id);
+
+            return response()->json(['message' => 'Deletado com sucesso']);
+
+        } catch (AuthorizationException $e) {
+            return response()->json(['message' => 'Não autorizado'], 403);
+        } catch (DomainException $e) {
+            return response()->json(['message' => $e->getMessage()], 404);
+        }
     }
 
-    public function finishEventsByOrganization(){
-        try{
-            $user = Auth::user();
-            $organization = $user->organization;
+    public function finish($id)
+    {
+        try {
+            $this->finishEvent->execute($id, auth()->id());
 
-            if(!$organization){
-                return response()->json([
-                    'message' => 'User is not associated with any organization.'
-                ], 400);
+            return response()->json(['message' => 'Evento finalizado']);
+
+        } catch (AuthorizationException $e) {
+            return response()->json(['message' => 'Não autorizado'], 403);
+        } catch (DomainException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+    }
+
+    public function finishAll()
+    {
+        try {
+            $organization = auth()->user()->organization;
+
+            if (!$organization) {
+                return response()->json(['message' => 'Sem organização'], 400);
             }
 
-            $this->authorize('finish', Event::class);
-            $this->eventService->finishEventsByOrganization($organization->id);
-        }catch(AuthorizationException $e){
-            return response()->json([
-                'message' => 'Unauthorized to finish events.'
-            ], 403);
-        }catch(Exception $e){
-            $idError = logErro($e->getMessage());
-            return response()->json([
-                'message' => 'An error occurred while finishing the events.',
-                'error_id' => $idError
-            ], 500);
-        }
+            $this->finishEventsByOrganization->execute(
+                $organization->id,
+                auth()->id()
+            );
 
-        return response()->json([
-            'message' => 'Events finished successfully.'
-        ], 200);
+            return response()->json(['message' => 'Eventos finalizados']);
+
+        } catch (Exception $e) {
+            return response()->json(['message' => 'Erro interno'], 500);
+        }
     }
 
-    public function registerResult(int $id, Request $request){
-        try{
-            $event = Event::findOrFail($id);
-            $this->authorize('finish', $event);
-            $response = $this->eventService->registerResult($event, $request->all());
-        }catch(DomainException $e){
+    public function registerResult($id, Request $request)
+    {
+        try {
+            $dto = new RegisterResultDTO(
+                eventId: $id,
+                competitorId: $request->id_competitor,
+                total_time: $request->total_time,
+                traveled_km: $request->traveled_km,
+                position: $request->position
+            );
+
+            $result = $this->registerResult->execute($dto);
+
+            return response()->json(['data' => $result]);
+
+        } catch (DomainException $e) {
             return response()->json(['message' => $e->getMessage()], 422);
-        }catch(AuthorizationException $e){
-            return response()->json([
-                'message' => 'Unauthorized to register result for this event.'
-            ], 403);
-        }catch(Exception $e){
-            $idError = logErro($e->getMessage());
-            return response()->json([
-                'message' => 'An error occurred while registering the result.',
-                'error_id' => $idError
-            ], 500);
         }
-
-        return response()->json([
-            'message' => 'Result registered successfully.',
-            'data' => $response
-        ], 200);
     }
 
-    public function getRanking(Event $event){
-        return $this->eventService->getRanking($event);
+    public function ranking($id)
+    {
+        return response()->json([
+            'data' => $this->getRanking->execute($id)
+        ]);
     }
 }
