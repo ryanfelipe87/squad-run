@@ -23,7 +23,10 @@ class LoginController extends Controller
     public function login(LoginRequest $request)
     {
         try{
-            $dto = new LoginDTO(...$request->validated());
+            $dto = new LoginDTO(
+                email: $request->validated()['email'],
+                password: $request->validated()['password']
+            );
             $result = $this->loginUser->execute($dto);
             return response()->json([
                 'message' => 'Login realizado com sucesso.',

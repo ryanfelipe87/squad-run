@@ -36,7 +36,7 @@ class CompetitorController extends Controller
         ]);
     }
 
-    public function show($id)
+    public function show(int $id)
     {
         try {
             $competitor = $this->getCompetitorById->execute($id);
@@ -55,14 +55,15 @@ class CompetitorController extends Controller
     public function store(CompetitorRegisterRequest $request)
     {
         try {
+            $data = $request->validated();
+
             $dto = new CompetitorDTO(
-                ...$request->only([
-                    'cpf',
-                    'sexo',
-                    'birth_date',
-                    'height',
-                    'weight'
-                ])
+                userId: auth()->id(),
+                cpf: $data['cpf'],
+                sexo: $data['sexo'],
+                birth_date: $data['birth_date'],
+                height: $data['height'],
+                weight: $data['weight']
             );
 
             $competitor = $this->createCompetitor->execute($dto);
@@ -87,7 +88,7 @@ class CompetitorController extends Controller
         }
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, int $id)
     {
         try {
             $competitor = $this->getCompetitorById->execute($id);
@@ -131,7 +132,7 @@ class CompetitorController extends Controller
         }
     }
 
-    public function destroy($id)
+    public function destroy(int $id)
     {
         try {
             $competitor = $this->getCompetitorById->execute($id);

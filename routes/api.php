@@ -31,11 +31,11 @@ Route::middleware('auth:sanctum')->group(function(){
     Route::put('/user/update-user-by-id/{id}', [RegisterUsersController::class, 'update'])->name('user.updateUserById');
     Route::delete('/user/delete-user-by-id/{id}', [RegisterUsersController::class, 'delete'])->name('user.deleteUserById');
 
-    Route::get('/organizations/all', [OrganizationController::class, 'allOrganizations'])->name('organizations.all');
-    Route::post('/organization/create', [OrganizationController::class, 'createOrganization'])->name('organization.create');
-    Route::get('/organization/{id}', [OrganizationController::class, 'getOrganizationById'])->name('organization.byId');
-    Route::put('/organization/update-organization-by-id/{id}', [OrganizationController::class, 'updateOrganization'])->name('organization.updateOrganization');
-    Route::delete('/organization/delete-organization-by-id/{id}', [OrganizationController::class, 'deleteOrganization'])->name('organization.deleteOrganization');
+    Route::get('/organizations/all', [OrganizationController::class, 'index'])->name('organizations.all');
+    Route::post('/organization/create', [OrganizationController::class, 'store'])->name('organization.create');
+    Route::get('/organization/{id}', [OrganizationController::class, 'show'])->name('organization.byId');
+    Route::put('/organization/update-organization-by-id/{id}', [OrganizationController::class, 'update'])->name('organization.updateOrganization');
+    Route::delete('/organization/delete-organization-by-id/{id}', [OrganizationController::class, 'destroy'])->name('organization.deleteOrganization');
 
     Route::get('/competitors/all', [CompetitorController::class, 'index'])->name('competitors.all');
     Route::get('/competitor/my-events', [CompetitorController::class, 'myEvents'])->name('competitor.events');
