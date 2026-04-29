@@ -41,7 +41,7 @@ class EventController extends Controller
         ]);
     }
 
-    public function show($id)
+    public function show(int $id)
     {
         try {
             return response()->json([
@@ -57,15 +57,17 @@ class EventController extends Controller
         try {
             $this->authorize('create', \App\Models\Event::class);
 
+            $data = $request->validated();
+
             $dto = new CreateEventDTO(
-                ...$request->only([
-                    'title',
-                    'description',
-                    'event_date',
-                    'vacancies',
-                    'route_km',
-                    'route_description'
-                ])
+                userId: auth()->id(),
+                title: $data['title'],
+                description: $data['description'],
+                event_date: $data['event_date'],
+                vacancies: $data['vacancies'],
+                route_km: $data['route_km'],
+                route_description: $data['route_description'],
+                status: $data['status']
             );
 
             $event = $this->createEvent->execute($dto);
@@ -79,7 +81,7 @@ class EventController extends Controller
         }
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, int $id)
     {
         try {
             $event = $this->getEventById->execute($id);
@@ -109,7 +111,7 @@ class EventController extends Controller
         }
     }
 
-    public function destroy($id)
+    public function destroy(int $id)
     {
         try {
             $event = $this->getEventById->execute($id);
@@ -127,7 +129,7 @@ class EventController extends Controller
         }
     }
 
-    public function finish($id)
+    public function finish(int $id)
     {
         try {
             $this->finishEvent->execute($id, auth()->id());
@@ -162,7 +164,7 @@ class EventController extends Controller
         }
     }
 
-    public function registerResult($id, Request $request)
+    public function registerResult(int $id, Request $request)
     {
         try {
             $dto = new RegisterResultDTO(
@@ -182,7 +184,7 @@ class EventController extends Controller
         }
     }
 
-    public function ranking($id)
+    public function ranking(int $id)
     {
         return response()->json([
             'data' => $this->getRanking->execute($id)

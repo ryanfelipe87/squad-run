@@ -27,7 +27,15 @@ class RegisterUsersController extends Controller
 
     public function register(RegisterValidateRequest $request){
         try{
-            $dto = new RegisterUserDTO(...$request->validated());
+            $data = $request->validated();
+
+            $dto = new RegisterUserDTO(
+                name: $data['name'],
+                email: $data['email'],
+                password: bcrypt($data['password']),
+                role: $data['role']
+            );
+
             $user = $this->registerUser->execute($dto);
             return response()->json([
                 'message' => 'Usuário registrado com sucesso.',
@@ -52,7 +60,7 @@ class RegisterUsersController extends Controller
         ]);
     }
 
-    public function show($id){
+    public function show(int $id){
         try{
             return response()->json([
                 'data' => $this->getUserById->execute($id)
@@ -62,9 +70,13 @@ class RegisterUsersController extends Controller
         }
     }
 
-    public function update($id, Request $request){
+    public function update(int $id, Request $request){
         try{
-            $dto = new UpdateUserDTO(...$request->only(['name', 'email']));
+            $data = $request->validated();
+            $dto = new UpdateUserDTO(
+                name: $data['name'],
+                email: $data['email']
+            );
             return response()->json([
                 'data' => $this->updateUser->execute($id, $dto)
             ]);
@@ -75,7 +87,7 @@ class RegisterUsersController extends Controller
         }
     }
 
-    public function deleteUserById($id){
+    public function deleteUserById(int $id){
         try{
             $this->deleteUser->execute($id);
             return response()->json(['message' => 'Usuário deletado com sucesso.']);

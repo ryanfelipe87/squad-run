@@ -34,12 +34,12 @@ class EventRegisterRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'title.required' => 'The title field is required.',
-            'description.required' => 'The description field is required.',
-            'event_date.required' => 'The event date field is required.',
-            'vacancies.required' => 'The vacancies field is required.',
-            'route_km.required' => 'The route km field is required.',
-            'route_description.required' => 'The route description field is required.'
+            'title.required' => 'O título é obrigatório.',
+            'description.required' => 'A descrição é obrigatória.',
+            'event_date.required' => 'A data do evento é obrigatória.',
+            'vacancies.required' => 'As vagas são obrigatórias.',
+            'route_km.required' => 'O km da rota é obrigatório.',
+            'route_description.required' => 'A descrição da rota é obrigatória.'
         ];
     }
 }

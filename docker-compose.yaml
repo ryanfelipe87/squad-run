@@ -12,6 +12,7 @@ services:
       - squadrun_net
     depends_on:
       - db
+    restart: always
 
   nginx:
     image: nginx:alpine

@@ -2,87 +2,114 @@
 
 namespace App\Http\Controllers;
 
+use App\DTOs\CreateOrganizationDTO;
+use App\DTOs\UpdateOrganizationDTO;
 use App\Http\Requests\OrganizationRegisterRequest;
-use App\Models\Organization;
-use App\Services\OrganizationService;
+use App\UseCases\Organizations\CreateOrganization;
+use App\UseCases\Organizations\DeleteOrganization;
+use App\UseCases\Organizations\GetAllOrganizations;
+use App\UseCases\Organizations\GetOrganizationById;
+use App\UseCases\Organizations\UpdateOrganization;
 use DomainException;
-use Exception;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\Request;
 
 class OrganizationController extends Controller
 {
-    protected $organizationService;
+    public function __construct(
+        private CreateOrganization $createOrganization,
+        private GetAllOrganizations $getAllOrganizations,
+        private GetOrganizationById $getOrganizationById,
+        private UpdateOrganization $updateOrganization,
+        private DeleteOrganization $deleteOrganization
+    ) {}
 
-    public function __construct(OrganizationService $organizationService){
-        $this->organizationService = $organizationService;
+    public function index()
+    {
+        return response()->json([
+            'data' => $this->getAllOrganizations->execute()
+        ]);
     }
 
-    public function getOrganizationById($id){
-        $response = $this->organizationService->getOrganizationById($id);
-        return response()->json($response);
-    }
-
-    public function allOrganizations(){
-        $response = $this->organizationService->getAllOrganizations();
-        return response()->json($response);
-    }
-
-    public function createOrganization(OrganizationRegisterRequest $request){
-        $data = $request->validated();
-        $response = $this->organizationService->createOrganization($data);
-        return response()->json($response, 201);
-    }
-
-    public function updateOrganization($id, Request $request){
-        try{
-            $organization = Organization::findOrFail($id);
-            $this->authorize('update', $organization);
-            $response = $this->organizationService->updateOrganization($id, $request->all());
-        } catch(DomainException $e){
+    public function show(int $id)
+    {
+        try {
             return response()->json([
-                'message' => $e->getMessage()
-            ], 404);
-        }catch(AuthorizationException $e){
-            return response()->json([
-                'message' => 'Unauthorized to update this organization.'
-            ], 403);
-        }catch(Exception $e){
-            $idError = logErro($e->getMessage());
-            return response()->json([
-                'message' => 'An error occurred while updating the organization.',
-                'error_id' => $idError
-            ], 500);
+                'data' => $this->getOrganizationById->execute($id)
+            ]);
+        } catch (DomainException $e) {
+            return response()->json(['message' => $e->getMessage()], 404);
         }
-
-        return response()->json($response, 200);
     }
 
-    public function deleteOrganization($id){
-        try{
-            $organization = Organization::findOrFail($id);
-            $this->authorize('delete', $organization);
-            $response = $this->organizationService->deleteOrganization($id);
-        } catch(DomainException $e){
-            return response()->json([
-                'message' => $e->getMessage()
-            ], 403);
-        } catch(DomainException $e){
-            return response()->json([
-                'message' => $e->getMessage()
-            ], 404);
-        } catch(AuthorizationException $e){
-            return response()->json([
-                'message' => 'Unauthorized to delete this organization.'
-            ], 403);
-        } catch(Exception $e){
-            $idError = logErro($e->getMessage());
-            return response()->json([
-                'message' => 'An error occurred while deleting the organization.',
-                'error_id' => $idError
-            ], 500);
-        }
+    public function store(OrganizationRegisterRequest $request)
+    {
+        try {
+            $data = $request->validated();
 
-        return response()->json($response, 200);
+            $dto = new CreateOrganizationDTO(
+                userId: auth()->id(),
+                name: $data['name'],
+                cnpj: $data['cnpj'],
+                city: $data['city'],
+                state: $data['state'],
+                zip_code: $data['zip_code'],
+                description: $data['description']
+            );
+
+            $org = $this->createOrganization->execute($dto);
+
+            return response()->json(['data' => $org], 201);
+
+        } catch (DomainException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+    }
+
+    public function update(Request $request, int $id)
+    {
+        try {
+            $org = $this->getOrganizationById->execute($id);
+
+            $this->authorize('update', $org);
+
+            $dto = new UpdateOrganizationDTO(
+                ...$request->only([
+                    'name',
+                    'cnpj',
+                    'city',
+                    'state',
+                    'zip_code',
+                    'description'
+                ])
+            );
+
+            return response()->json([
+                'data' => $this->updateOrganization->execute($id, $dto)
+            ]);
+
+        } catch (AuthorizationException $e) {
+            return response()->json(['message' => 'Não autorizado'], 403);
+        } catch (DomainException $e) {
+            return response()->json(['message' => $e->getMessage()], 404);
+        }
+    }
+
+    public function destroy(int $id)
+    {
+        try {
+            $org = $this->getOrganizationById->execute($id);
+
+            $this->authorize('delete', $org);
+
+            $this->deleteOrganization->execute($id);
+
+            return response()->json(['message' => 'Deletado com sucesso']);
+
+        } catch (AuthorizationException $e) {
+            return response()->json(['message' => 'Não autorizado'], 403);
+        } catch (DomainException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
     }
 }

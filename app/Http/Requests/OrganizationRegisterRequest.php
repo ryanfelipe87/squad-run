@@ -34,14 +34,14 @@ class OrganizationRegisterRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'name.required' => 'The name field is required.',
-            'cnpj.required' => 'The CNPJ field is required.',
-            'cnpj.max' => 'The CNPJ may not be greater than 14 characters.',
-            'cnpj.unique' => 'The CNPJ has already been taken.',
-            'city.required' => 'The city field is required.',
-            'state.required' => 'The state field is required.',
-            'zip_code.required' => 'The zip code field is required.',
-            'zip_code.max' => 'The zip code may not be greater than 8 characters.',
+            'name.required' => 'O nome é obrigatório.',
+            'cnpj.required' => 'O CNPJ é obrigatório.',
+            'cnpj.max' => 'O CNPJ não pode ter mais de 14 caracteres.',
+            'cnpj.unique' => 'O CNPJ já foi utilizado.',
+            'city.required' => 'A cidade é obrigatória.',
+            'state.required' => 'O estado é obrigatório.',
+            'zip_code.required' => 'O código postal é obrigatório.',
+            'zip_code.max' => 'O código postal não pode ter mais de 8 caracteres.',
         ];
     }
 }

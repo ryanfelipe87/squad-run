@@ -33,15 +33,15 @@ class RegisterValidateRequest extends FormRequest
 
     public function messages() : array {
         return [
-            'name.required' => 'Name is required.',
-            'email.required' => 'Email is required.',
-            'email.email' => 'Email must be a valid email address.',
-            'email.unique' => 'Email is already taken.',
-            'password.required' => 'Password is required.',
-            'password.min' => 'Password must be at least 8 characters.',
-            'password.confirmed' => 'Password confirmation does not match.',
-            'role.required' => 'Role is required.',
-            'role.enum' => 'Role must be either "organizator" or "participant".'
+            'name.required' => 'O nome é obrigatório.',
+            'email.required' => 'O E-mail é obrigatório.',
+            'email.email' => 'O E-mail deve ser um endereço de email válido.',
+            'email.unique' => 'O E-mail já está em uso.',
+            'password.required' => 'A senha é obrigatória.',
+            'password.min' => 'A senha deve ter pelo menos 8 caracteres.',
+            'password.confirmed' => 'A confirmação da senha não corresponde.',
+            'role.required' => 'O papel é obrigatório.',
+            'role.enum' => 'O papel deve ser "organizator" ou "participant".'
         ];
     }
 }
