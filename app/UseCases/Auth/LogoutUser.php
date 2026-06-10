@@ -8,8 +8,9 @@ class LogoutUser
 {
     public function execute() : void
     {
-        $user = Auth::user();
+        Auth::logout();
 
-        $user->currentAccessToken()->delete();
+        request()->session()->invalidate();
+        request()->session()->regenerateToken();
     }
 }

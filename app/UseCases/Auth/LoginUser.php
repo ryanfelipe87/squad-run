@@ -9,37 +9,17 @@ use Illuminate\Validation\ValidationException;
 
 class LoginUser
 {
-    public function __construct(
-        private UserRepositoryInterface $repository
-    ){}
-
-    public function execute(LoginDTO $dto) : array
+    public function execute(LoginDTO $dto) : void
     {
         if(!Auth::attempt([
             'email' => $dto->email,
             'password' => $dto->password
         ])){
             throw ValidationException::withMessages([
-                'email' => ['E-mail ou senha inválidos.']
+                'email' => ['As credenciais fornecidas estão incorretas.']
             ]);
         }
 
-        $user = Auth::user();
-
-        $user->tokens()->delete();
-
-        $accessExpiresAt = now()->addMinutes(15);
-        $refreshExpiresAt = now()->addDays(7);
-
-        $accessToken = $user->createToken('access_token', ['access'], $accessExpiresAt)->plainTextToken;
-
-        $refreshToken = $user->createToken('refresh_token', ['refresh'], $refreshExpiresAt)->plainTextToken;
-
-        return [
-            'user' => $user,
-            'access_token' => $accessToken,
-            'refresh_token' => $refreshToken,
-            'expires_at' => $accessExpiresAt
-        ];
+        request()->session()->regenerate();
     }
 }
