@@ -26,20 +26,23 @@ class OrganizationController extends Controller
 
     public function index()
     {
-        return response()->json([
-            'data' => $this->getAllOrganizations->execute()
-        ]);
+        $organizations = $this->getAllOrganizations->execute();
+        return view('organizations.index', compact('organizations'));
     }
 
     public function show(int $id)
     {
         try {
-            return response()->json([
-                'data' => $this->getOrganizationById->execute($id)
-            ]);
+            $organization = $this->getOrganizationById->execute($id);
+            return view('organizations.show', compact('organization'));
         } catch (DomainException $e) {
-            return response()->json(['message' => $e->getMessage()], 404);
+            return redirect()->back()->withErrors($e->getMessage());
         }
+    }
+
+    public function create()
+    {
+        return view('organizations.create');
     }
 
     public function store(OrganizationRegisterRequest $request)
@@ -57,21 +60,28 @@ class OrganizationController extends Controller
                 description: $data['description']
             );
 
-            $org = $this->createOrganization->execute($dto);
+            $organization = $this->createOrganization->execute($dto);
 
-            return response()->json(['data' => $org], 201);
+            return redirect()->route('organizations.show', $organization->id)->with('success', 'Organização criada com sucesso');
 
         } catch (DomainException $e) {
-            return response()->json(['message' => $e->getMessage()], 422);
+            return redirect()->back()->withErrors($e->getMessage())->withInput();
         }
+    }
+
+    public function edit(int $id)
+    {
+        $organization = $this->getOrganizationById->execute($id);
+        $this->authorize('update', $organization);
+        return view('organizations.edit', compact('organization'));
     }
 
     public function update(Request $request, int $id)
     {
         try {
-            $org = $this->getOrganizationById->execute($id);
+            $organization = $this->getOrganizationById->execute($id);
 
-            $this->authorize('update', $org);
+            $this->authorize('update', $organization);
 
             $dto = new UpdateOrganizationDTO(
                 ...$request->only([
@@ -84,14 +94,14 @@ class OrganizationController extends Controller
                 ])
             );
 
-            return response()->json([
-                'data' => $this->updateOrganization->execute($id, $dto)
-            ]);
+            $organization = $this->updateOrganization->execute($id, $dto);
+
+            return redirect()->route('organizations.show', $organization->id)->with('success', 'Organização atualizada com sucesso');
 
         } catch (AuthorizationException $e) {
-            return response()->json(['message' => 'Não autorizado'], 403);
+            return redirect()->back()->withErrors('Não autorizado');
         } catch (DomainException $e) {
-            return response()->json(['message' => $e->getMessage()], 404);
+            return redirect()->back()->withErrors($e->getMessage())->withInput();
         }
     }
 
@@ -104,12 +114,12 @@ class OrganizationController extends Controller
 
             $this->deleteOrganization->execute($id);
 
-            return response()->json(['message' => 'Deletado com sucesso']);
+            return redirect()->route('organizations.index')->with('success', 'Organização deletada com sucesso');
 
         } catch (AuthorizationException $e) {
-            return response()->json(['message' => 'Não autorizado'], 403);
+            return redirect()->back()->withErrors('Não autorizado');
         } catch (DomainException $e) {
-            return response()->json(['message' => $e->getMessage()], 422);
+            return redirect()->back()->withErrors($e->getMessage())->withInput();
         }
     }
 }
