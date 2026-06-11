@@ -3,14 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\DTOs\SubscribeEventDTO;
-use App\Models\Competitor;
 use App\Models\Event;
-use App\Services\EnrollEventCompetitorService;
 use App\UseCases\Subscribes\SubscribeCompetitor;
 use DomainException;
 use Exception;
 use Illuminate\Auth\Access\AuthorizationException;
-use Illuminate\Http\Request;
 
 class EnrollEventCompetitorController extends Controller
 {
@@ -26,26 +23,16 @@ class EnrollEventCompetitorController extends Controller
                 userId: auth()->id()
             );
 
-            $registration = $this->subscribeCompetitor->execute($dto);
+            $this->subscribeCompetitor->execute($dto);
 
-            return response()->json([
-                'message' => 'Inscrição realizada com sucesso',
-                'data' => $registration
-            ], 201);
+            return redirect()->route('events.show', $event->id)->with('success', 'Inscrição realizada com sucesso!');
         }catch(DomainException $e){
-            return response()->json([
-                'message' => $e->getMessage()
-            ], 422);
+            return redirect()->back()->with('error', $e->getMessage());
         }catch(AuthorizationException $e){
-            return response()->json([
-                'message' => 'Não autorizado.'
-            ], 403);
+            return redirect()->back()->with('error', 'Você não tem permissão para realizar esta inscrição.');
         }catch(Exception $e){
             $idError = logErro($e->getMessage());
-            return response()->json([
-                'message' => 'Erro interno.',
-                'error_id' => $idError
-            ], 500);
+            return redirect()->back()->with('error', 'Erro interno. Código do erro: ' . $idError);
         }
     }
 }
