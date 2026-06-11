@@ -29,7 +29,7 @@ class LoginController extends Controller
             return redirect()->back()->withErrors($e->errors())->withInput();
         } catch(Exception $e){
             $idError = logErro($e->getMessage());
-            return back()->with('error', 'Erro interno. Código do erro: ' . $idError);
+            return redirect()->back()->withErrors('Erro interno. Código do erro: ' . $idError);
         }
     }
 
@@ -40,7 +40,7 @@ class LoginController extends Controller
             return redirect()->route('login')->with('success', 'Logout realizado com sucesso.');
         } catch(Exception $e){
             $idError = logErro($e->getMessage());
-            return redirect()->back()->with('error', 'Erro interno. Código do erro: ' . $idError);
+            return redirect()->back()->withErrors('Erro interno. Código do erro: ' . $idError);
         }
     }
 }
