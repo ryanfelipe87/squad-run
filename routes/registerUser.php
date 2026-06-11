@@ -3,9 +3,15 @@
 use App\Http\Controllers\RegisterUsersController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/register', [RegisterUsersController::class, 'index'])->name('register');
-Route::post('/register/create', [RegisterUsersController::class, 'register'])->name('register.create');
-Route::get('/register/get-all-users', [RegisterUsersController::class, 'getAllUsers'])->name('register.getAllUsers');
-Route::get('/register/get-user-by-id/{id}', [RegisterUsersController::class, 'getUserById'])->name('register.getUserById');
-Route::put('/register/update-user-by-id/{id}', [RegisterUsersController::class, 'updateUserById'])->name('register.updateUserById');
-Route::delete('/register/delete-user-by-id/{id}', [RegisterUsersController::class, 'deleteUserById'])->name('register.deleteUserById');
+Route::middleware('guest')->group(function(){
+    Route::get('/register', [RegisterUsersController::class, 'create'])->name('register');
+    Route::post('/register', [RegisterUsersController::class, 'register'])->name('register.store');
+});
+
+Route::middleware('auth')->prefix('users')->name('users.')->group(function(){
+    Route::get('/', [RegisterUsersController::class, 'index'])->name('index');
+    Route::get('/{id}', [RegisterUsersController::class, 'show'])->name('show');
+    Route::get('/{id}/edit', [RegisterUsersController::class, 'edit'])->name('edit');
+    Route::put('/{id}', [RegisterUsersController::class, 'update'])->name('update');
+    Route::delete('/{id}', [RegisterUsersController::class, 'destroy'])->name('destroy');
+});

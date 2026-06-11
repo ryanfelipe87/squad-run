@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\DTOs\RegisterUserDTO;
 use App\DTOs\UpdateUserDTO;
 use App\Http\Requests\RegisterValidateRequest;
-use App\Services\RegisterUsersService;
 use App\UseCases\Users\DeleteUser;
 use App\UseCases\Users\GetAllUsers;
 use App\UseCases\Users\GetUserById;
@@ -25,7 +24,8 @@ class RegisterUsersController extends Controller
         private DeleteUser $deleteUser
     ){}
 
-    public function register(RegisterValidateRequest $request){
+    public function register(RegisterValidateRequest $request)
+    {
         try{
             $data = $request->validated();
 
@@ -36,65 +36,61 @@ class RegisterUsersController extends Controller
                 role: $data['role']
             );
 
-            $user = $this->registerUser->execute($dto);
-            return response()->json([
-                'message' => 'Usuário registrado com sucesso.',
-                'data' => $user
-            ], 201);
+            $this->registerUser->execute($dto);
+            return redirect()->route('login')->with('success', 'Registro realizado com sucesso. Faça login para continuar.');
         } catch(DomainException $e){
-            return response()->json([
-                'message' => $e->getMessage()
-            ], 400);
+            return redirect()->back()->withErrors($e->getMessage())->withInput();
         } catch(Exception $e){
             $idError = logErro($e->getMessage());
-            return response()->json([
-                'message' => 'Erro interno.',
-                'error_id' => $idError
-            ], 500);
+            return redirect()->back()->withErrors("Ocorreu um erro inesperado. Código do erro: $idError")->withInput();
         }
     }
 
-    public function index(){
-        return response()->json([
-            'data' => $this->getAllUsers->execute()
-        ]);
+    public function index()
+    {
+        $users = $this->getAllUsers->execute();
+        return view('users.index', compact('users'));
     }
 
-    public function show(int $id){
+    public function show(int $id)
+    {
         try{
-            return response()->json([
-                'data' => $this->getUserById->execute($id)
-            ]);
+            $users = $this->getUserById->execute($id);
+            return view('users.show', compact('users'));
         }catch(DomainException $e){
-            return response()->json(['message' => $e->getMessage()], 404);
+            return redirect()->route('users.index')->withErrors($e->getMessage());
         }
     }
 
-    public function update(int $id, Request $request){
+    public function edit(int $id)
+    {
+        $user = $this->getUserById->execute($id);
+        return view('users.edit', compact('user'));
+    }
+
+    public function update(int $id, Request $request)
+    {
         try{
             $data = $request->validated();
             $dto = new UpdateUserDTO(
                 name: $data['name'],
                 email: $data['email']
             );
-            return response()->json([
-                'data' => $this->updateUser->execute($id, $dto)
-            ]);
+
+            $this->updateUser->execute($id, $dto);
+            return redirect()->route('users.show', ['id' => $id])->with('success', 'Usuário atualizado com sucesso');
         } catch(DomainException $e){
-            return response()->json([
-                'message' => $e->getMessage()
-            ], 404);
+            return redirect()->back()->withErrors($e->getMessage())->withInput();
         }
     }
 
-    public function deleteUserById(int $id){
+    public function destroy(int $id)
+    {
         try{
             $this->deleteUser->execute($id);
-            return response()->json(['message' => 'Usuário deletado com sucesso.']);
+            return redirect()->route('users.index')->with('success', 'Usuário deletado com sucesso');
         } catch(DomainException $e){
-            return response()->json([
-                'message' => $e->getMessage()
-            ], 404);
+            return redirect()->back()->withErrors($e->getMessage());
         }
     }
 }
