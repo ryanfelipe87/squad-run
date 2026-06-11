@@ -36,20 +36,24 @@ class EventController extends Controller
 
     public function index()
     {
-        return response()->json([
-            'data' => $this->getAllEvents->execute()
-        ]);
+        $events = $this->getAllEvents->execute();
+        return view('events.index', compact('events'));
     }
 
     public function show(int $id)
     {
         try {
-            return response()->json([
-                'data' => $this->getEventById->execute($id)
-            ]);
+            $event = $this->getEventById->execute($id);
+            return view('events.show', compact('event'));
         } catch (DomainException $e) {
-            return response()->json(['message' => $e->getMessage()], 404);
+            return redirect()->route('events.index')->with('error', $e->getMessage());
         }
+    }
+
+    public function create()
+    {
+        $this->authorize('create', \App\Models\Event::class);
+        return view('events.create');
     }
 
     public function store(EventRegisterRequest $request)
@@ -72,13 +76,21 @@ class EventController extends Controller
 
             $event = $this->createEvent->execute($dto);
 
-            return response()->json(['data' => $event], 201);
+            return redirect()->route('events.show', $event->id)->with('success', 'Evento criado com sucesso');
 
         } catch (AuthorizationException $e) {
-            return response()->json(['message' => 'Não autorizado'], 403);
+            return redirect()->back()->withErrors('Não autorizado');
         } catch (Exception $e) {
-            return response()->json(['message' => 'Erro interno'], 500);
+            $idError = logErro($e->getMessage());
+            return redirect()->back()->with('error', 'Erro interno. Código de erro: ' . $idError);
         }
+    }
+
+    public function edit(int $id)
+    {
+        $event = $this->getEventById->execute($id);
+        $this->authorize('update', $event);
+        return view('events.edit', compact('event'));
     }
 
     public function update(Request $request, int $id)
@@ -100,14 +112,14 @@ class EventController extends Controller
                 ])
             );
 
-            return response()->json([
-                'data' => $this->updateEvent->execute($id, $dto)
-            ]);
+            $this->updateEvent->execute($id, $dto);
+
+            return redirect()->route('events.show', $id)->with('success', 'Evento atualizado com sucesso!');
 
         } catch (AuthorizationException $e) {
-            return response()->json(['message' => 'Não autorizado'], 403);
+            return redirect()->back()->withErrors('Não autorizado');
         } catch (DomainException $e) {
-            return response()->json(['message' => $e->getMessage()], 404);
+            return redirect()->back()->withErrors($e->getMessage());
         }
     }
 
@@ -120,12 +132,12 @@ class EventController extends Controller
 
             $this->deleteEvent->execute($id);
 
-            return response()->json(['message' => 'Deletado com sucesso']);
+            return redirect()->route('events.index')->with('success', 'Evento deletado com sucesso!');
 
         } catch (AuthorizationException $e) {
-            return response()->json(['message' => 'Não autorizado'], 403);
+            return redirect()->back()->withErrors('Não autorizado');
         } catch (DomainException $e) {
-            return response()->json(['message' => $e->getMessage()], 404);
+            return redirect()->back()->withErrors($e->getMessage());
         }
     }
 
@@ -134,12 +146,12 @@ class EventController extends Controller
         try {
             $this->finishEvent->execute($id, auth()->id());
 
-            return response()->json(['message' => 'Evento finalizado']);
+            return redirect()->route('events.show', $id)->with('success', 'Evento finalizado com sucesso!');
 
         } catch (AuthorizationException $e) {
-            return response()->json(['message' => 'Não autorizado'], 403);
+            return redirect()->back()->withErrors('Não autorizado');
         } catch (DomainException $e) {
-            return response()->json(['message' => $e->getMessage()], 422);
+            return redirect()->back()->withErrors($e->getMessage());
         }
     }
 
@@ -149,7 +161,7 @@ class EventController extends Controller
             $organization = auth()->user()->organization;
 
             if (!$organization) {
-                return response()->json(['message' => 'Sem organização'], 400);
+                return redirect()->back()->withErrors('Usuário não pertence a nenhuma organização');
             }
 
             $this->finishEventsByOrganization->execute(
@@ -157,10 +169,11 @@ class EventController extends Controller
                 auth()->id()
             );
 
-            return response()->json(['message' => 'Eventos finalizados']);
+            return redirect()->route('events.index')->with('success', 'Todos os eventos da organização finalizados com sucesso!');
 
         } catch (Exception $e) {
-            return response()->json(['message' => 'Erro interno'], 500);
+            $idError = logErro($e->getMessage());
+            return redirect()->back()->withErrors('Erro interno. Código de erro: ' . $idError);
         }
     }
 
@@ -175,19 +188,18 @@ class EventController extends Controller
                 position: $request->position
             );
 
-            $result = $this->registerResult->execute($dto);
+            $this->registerResult->execute($dto);
 
-            return response()->json(['data' => $result]);
+            return redirect()->route('events.ranking', $id)->with('success', 'Resultado registrado com sucesso!');
 
         } catch (DomainException $e) {
-            return response()->json(['message' => $e->getMessage()], 422);
+            return redirect()->back()->withInput()->withErrors($e->getMessage());
         }
     }
 
     public function ranking(int $id)
     {
-        return response()->json([
-            'data' => $this->getRanking->execute($id)
-        ]);
+        $ranking = $this->getRanking->execute($id);
+        return view('events.ranking', compact('ranking'));
     }
 }
