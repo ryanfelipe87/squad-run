@@ -16,15 +16,28 @@ class LoginController extends Controller
         private LogoutUser $logoutUser
     ){}
 
+    public function index()
+    {
+        return view('auth.login');
+    }
+
     public function login(LoginRequest $request)
     {
         try{
+            $user = auth()->user();
             $dto = new LoginDTO(
                 email: $request->validated()['email'],
-                password: $request->validated()['password']
+                password: $request->validated()['password'],
+                remember: $request->boolean('remember')
             );
             $this->loginUser->execute($dto);
-            return redirect()->route('dashboard')->with('success', 'Login realizado com sucesso.');
+            $request->session()->regenerate();
+
+            if($user->role === 'competitor'){
+                return redirect()->route('competitor.dashboard')->with('success', 'Login realizado com sucesso.');
+            }
+
+            return redirect()->route('organization.dashboard')->with('success', 'Login realizado com sucesso.');
         } catch(ValidationException $e){
             return redirect()->back()->withErrors($e->errors())->withInput();
         } catch(Exception $e){
