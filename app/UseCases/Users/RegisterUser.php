@@ -4,8 +4,12 @@ namespace App\UseCases\Users;
 
 use App\Contracts\UserRepositoryInterface;
 use App\DTOs\RegisterUserDTO;
+use App\Jobs\SendConfirmationEmailJob;
 use App\Models\User;
 use DomainException;
+use Illuminate\Auth\Events\Registered;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class RegisterUser
 {
@@ -19,11 +23,14 @@ class RegisterUser
             throw new DomainException('E-mail já cadastrado.');
         }
 
-        return $this->userRepository->create([
+        $user = $this->userRepository->create([
             'name' => $dto->name,
             'email' => $dto->email,
-            'password' => $dto->password,
+            'password' => Hash::make($dto->password),
             'role' => $dto->role
         ]);
+
+        event(new Registered($user));
+        return $user;
     }
 }
