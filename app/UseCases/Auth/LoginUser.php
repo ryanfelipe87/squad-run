@@ -19,5 +19,14 @@ class LoginUser
                 'email' => ['As credenciais fornecidas estão incorretas.']
             ]);
         }
+
+        $user = Auth::user();
+
+        if(!$user->hasVerifiedEmail()){
+            Auth::logout();
+            throw ValidationException::withMessages([
+                'email' => ['Por favor, verifique seu e-mail para ativar sua conta.']
+            ]);
+        }
     }
 }

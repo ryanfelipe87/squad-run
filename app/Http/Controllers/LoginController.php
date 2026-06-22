@@ -6,6 +6,7 @@ use App\DTOs\LoginDTO;
 use App\Http\Requests\LoginRequest;
 use App\UseCases\Auth\LoginUser;
 use App\UseCases\Auth\LogoutUser;
+use App\UseCases\Home\HomePage;
 use Exception;
 use Illuminate\Validation\ValidationException;
 
@@ -13,12 +14,14 @@ class LoginController extends Controller
 {
     public function __construct(
         private LoginUser $loginUser,
-        private LogoutUser $logoutUser
+        private LogoutUser $logoutUser,
+        private HomePage $homePage
     ){}
 
     public function index()
     {
-        return view('auth.login');
+        $dados = $this->homePage->execute();
+        return view('auth.login', compact('dados'));
     }
 
     public function login(LoginRequest $request)

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\DTOs\RegisterUserDTO;
 use App\DTOs\UpdateUserDTO;
 use App\Http\Requests\RegisterValidateRequest;
+use App\UseCases\Home\HomePage;
 use App\UseCases\Users\DeleteUser;
 use App\UseCases\Users\GetAllUsers;
 use App\UseCases\Users\GetUserById;
@@ -21,8 +22,15 @@ class RegisterUsersController extends Controller
         private GetAllUsers $getAllUsers,
         private GetUserById $getUserById,
         private UpdateUser $updateUser,
-        private DeleteUser $deleteUser
+        private DeleteUser $deleteUser,
+        private HomePage $homePage
     ){}
+
+    public function create()
+    {
+        $dados = $this->homePage->execute();
+        return view('auth.register', compact('dados'));
+    }
 
     public function register(RegisterValidateRequest $request)
     {
@@ -32,12 +40,12 @@ class RegisterUsersController extends Controller
             $dto = new RegisterUserDTO(
                 name: $data['name'],
                 email: $data['email'],
-                password: bcrypt($data['password']),
+                password: $data['password'],
                 role: $data['role']
             );
 
             $this->registerUser->execute($dto);
-            return redirect()->route('login')->with('success', 'Registro realizado com sucesso. Faça login para continuar.');
+            return redirect()->route('login')->with('success', 'Cadastro realizado com sucesso. Verifique seu e-mail para ativar sua conta.');
         } catch(DomainException $e){
             return redirect()->back()->withErrors($e->getMessage())->withInput();
         } catch(Exception $e){

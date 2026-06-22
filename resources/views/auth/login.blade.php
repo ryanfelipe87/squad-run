@@ -350,14 +350,23 @@
 
         .signup-cta a:hover { color: var(--deep); }
 
-        .alert-error {
-            background: rgba(255,255,255,0.1);
-            border-left: 4px solid var(--error);
+        .alert {
+            border-left: 4px solid;
             border-radius: 6px;
             padding: 12px 14px;
             font-size: 0.83rem;
-            color: var(--error);
             margin-bottom: 20px;
+            background: rgba(255,255,255,0.1);
+        }
+
+        .alert-success {
+            border-left-color: var(--success);
+            color: var(--success);
+        }
+
+        .alert-error {
+            border-left-color: var(--error);
+            color: var(--error);
         }
 
         .field-error {
@@ -507,16 +516,16 @@
 
         <div class="brand-stats">
             <div class="stat">
-                <div class="stat-num">12k+</div>
-                <div class="stat-label">Corredores</div>
+                <div class="stat-num">{{ number_format($dados['estatisticas']['corredores'], 0, ',', '.') }}</div>
+                <div class="stat-label">Corredores cadastrados</div>
             </div>
             <div class="stat">
-                <div class="stat-num">340</div>
-                <div class="stat-label">Eventos</div>
+                <div class="stat-num">{{ number_format($dados['estatisticas']['eventosRealizados'], 0, ',', '.') }}</div>
+                <div class="stat-label">Eventos realizados</div>
             </div>
             <div class="stat">
-                <div class="stat-num">98%</div>
-                <div class="stat-label">Satisfação</div>
+                <div class="stat-num">{{ $dados['proximoEventos']->count() }}</div>
+                <div class="stat-label">Quantidade de eventos a seguir</div>
             </div>
         </div>
     </div>
@@ -531,8 +540,14 @@
             <h2 class="form-title">Entrar</h2>
             <p class="form-subtitle">Acesse sua conta para continuar</p>
 
+            @if (session('success'))
+                <div class="alert alert-success">
+                    {{ session('success') }}
+                </div>
+            @endif
+
             @if ($errors->any())
-                <div class="alert-error">
+                <div class="alert alert-error">
                     {{ $errors->first() }}
                 </div>
             @endif
@@ -559,9 +574,6 @@
                             class="{{ $errors->has('email') ? 'is-invalid' : '' }}"
                         >
                     </div>
-                    @error('email')
-                        <span class="field-error">{{ $message }}</span>
-                    @enderror
                 </div>
 
                 <div class="field">
@@ -580,9 +592,6 @@
                             class="{{ $errors->has('password') ? 'is-invalid' : '' }}"
                         >
                     </div>
-                    @error('password')
-                        <span class="field-error">{{ $message }}</span>
-                    @enderror
                 </div>
 
                 <div class="field-row">
