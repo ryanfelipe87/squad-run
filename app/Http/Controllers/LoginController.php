@@ -27,7 +27,6 @@ class LoginController extends Controller
     public function login(LoginRequest $request)
     {
         try{
-            $user = auth()->user();
             $dto = new LoginDTO(
                 email: $request->validated()['email'],
                 password: $request->validated()['password'],
@@ -35,12 +34,13 @@ class LoginController extends Controller
             );
             $this->loginUser->execute($dto);
             $request->session()->regenerate();
+            $user = auth()->user();
 
             if($user->role === 'competitor'){
-                return redirect()->route('competitor.dashboard')->with('success', 'Login realizado com sucesso.');
+                return redirect()->route('competitors.dashboard')->with('success', 'Login realizado com sucesso.');
             }
 
-            return redirect()->route('organization.dashboard')->with('success', 'Login realizado com sucesso.');
+            return redirect()->route('organizations.dashboard')->with('success', 'Login realizado com sucesso.');
         } catch(ValidationException $e){
             return redirect()->back()->withErrors($e->errors())->withInput();
         } catch(Exception $e){

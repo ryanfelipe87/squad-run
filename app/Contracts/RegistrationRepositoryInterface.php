@@ -9,4 +9,8 @@ interface RegistrationRepositoryInterface
     public function exists(int $userId, int $eventId) : bool;
     public function countByEventWithLock(int $eventId) : int;
     public function create(array $data) : Registrations;
+    public function countByCompetitor(int $competitorId) : int;
+    public function countPodiums(int $competitorId) : int;
+    public function getNextEvent(int $competitorId);
+    public function getRecentRaces(int $competitorId, int $limit = 5);
 }
