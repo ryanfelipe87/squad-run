@@ -5,18 +5,17 @@ services:
     build:
       context: .
       dockerfile: docker/php/Dockerfile
-    container_name: squadrun_app
     volumes:
       - ./:/var/www
     networks:
       - squadrun_net
     depends_on:
-      - db
-    restart: always
+      db:
+        condition: service_healthy
+    restart: unless-stopped
 
   nginx:
     image: nginx:alpine
-    container_name: squadrun_nginx
     ports:
       - "8000:80"
     volumes:
@@ -26,56 +25,60 @@ services:
       - app
     networks:
       - squadrun_net
+    restart: unless-stopped
 
   db:
     image: postgres:14
-    container_name: squadrun_db
     restart: always
     environment:
       POSTGRES_DB: ${DB_DATABASE}
       POSTGRES_USER: ${DB_USERNAME}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
-    ports:
-      - "5433:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     networks:
       - squadrun_net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   queue:
     build:
       context: .
       dockerfile: docker/php/Dockerfile
-    container_name: squadrun_queue
     command: php artisan queue:work redis --tries=3 --timeout=90
     volumes:
       - ./:/var/www
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
     networks:
       - squadrun_net
+    restart: unless-stopped
 
   scheduler:
     build:
       context: .
       dockerfile: docker/php/Dockerfile
-    container_name: squadrun_scheduler
-    command: sh -c "While true; do php artisan schedule:run; sleep 60; done"
+    command: sh -c "while true; do php artisan schedule:run; sleep 60; done"
     volumes:
       - ./:/var/www
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     networks:
       - squadrun_net
+    restart: unless-stopped
 
   redis:
     image: redis:alpine
-    container_name: squadrun_redis
-    ports:
-      - "6379:6379"
     networks:
       - squadrun_net
+    restart: unless-stopped
 
 networks:
   squadrun_net:

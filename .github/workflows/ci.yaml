@@ -5,6 +5,10 @@ on:
     branches:
       - main
 
+env:
+  COMPOSE_PROJECT_NAME: squadrun_ci
+  COMPOSE_FILE: docker-compose.yaml:docker-compose.ci.yml
+
 jobs:
   build:
     runs-on: [self-hosted, linux]
@@ -26,11 +30,14 @@ jobs:
           sed -i "s/^DB_DATABASE=.*/DB_DATABASE=squad_run_testing/" .env
           sed -i "s/^DB_USERNAME=.*/DB_USERNAME=postgres/" .env
           sed -i "s/^DB_PASSWORD=.*/DB_PASSWORD=secret/" .env
+          sed -i "s/^REDIS_HOST=.*/REDIS_HOST=redis/" .env
+          sed -i "s/^REDIS_PORT=.*/REDIS_PORT=6379/" .env
 
       - name: Start Docker Containers
         run: |
           docker compose down -v
-          docker compose up -d
+          docker compose up -d app db redis
+          docker compose ps
 
       - name: Wait for database
         run: |
@@ -60,6 +67,10 @@ jobs:
       - name: Show Laravel log on failure
         if: failure()
         run: docker compose exec -T app cat storage/logs/laravel.log
+
+      - name: Stop Containers
+        if: always()
+        run: docker compose down -v
 
       - name: Fix permissions after run
         if: always()
