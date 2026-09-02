@@ -1,4 +1,4 @@
-name: ci squad-run
+name: CI SQUAD-RUN
 
 on:
   pull_request:
@@ -7,22 +7,36 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
+    container:
+      image: php:8.4-cli
     steps:
-      - uses: shivammathur/setup-php@15c43e89cdef867065b0213be354c2841860869e
-        with:
-          php-version: 8.4
       - uses: actions/checkout@v4
-      - name: Copy .env file
+
+      - name: Instalando dependências do sistema
+        run: |
+          apt-get update -yqq
+          apt-get install -yqq git unzip libzip-dev libpng-dev libonig-dev
+          docker-php-ext-install pdo pdo_mysql zip
+
+      - name: Instalando Composer
+        run: |
+          curl -sS https://getcomposer.org/installer | php
+          mv composer.phar /usr/local/bin/composer
+
+      - name: Copiando .env file
         run: cp .env.example .env
-      - name: Install dependencies
+
+      - name: Instalando dependências
         run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
-      - name: Generate application key
+
+      - name: Gerando chave da aplicação
         run: php artisan key:generate
-      - name: Directory permissions
+
+      - name: Permissões de diretório
         run: |
           chmod -R 777 storage
           chmod -R 777 bootstrap/cache
-      - name: Run tests
-        run: vendor/bin/phpunit --testdox
 
+      - name: Executando testes
+        run: vendor/bin/phpunit --testdox
