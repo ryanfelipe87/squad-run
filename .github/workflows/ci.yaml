@@ -1,4 +1,4 @@
-name: CI SQUAD-RUN
+name: CI
 
 on:
   pull_request:
@@ -7,52 +7,34 @@ on:
 
 jobs:
   build:
-    runs-on: self-hosted
-    container:
-      image: php:8.4-cli
+    runs-on: [self-hosted, linux]
+
     steps:
       - uses: actions/checkout@v4
 
-      - name: Instalando dependências do sistema
-        run: |
-          apt-get update -yqq
-          apt-get install -yqq git unzip libzip-dev libpng-dev libonig-dev libpq-dev
-          docker-php-ext-install pdo pdo_pgsql zip
-
-      - name: Verificando extensões do PHP
-        run: php -m | grep -i pgsql
-
-      - name: Instalando Composer
-        run: |
-          curl -sS https://getcomposer.org/installer | php
-          mv composer.phar /usr/local/bin/composer
-
-      - name: Copiando .env file
+      - name: Copy .env file
         run: cp .env.example .env
 
-      - name: Instalando dependências
-        run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+      - name: Start Docker Containers
+        run: docker compose up -d
 
-      - name: Gerando chave da aplicação
-        run: php artisan key:generate
+      - name: Install dependencies
+        run: docker compose exec -T squadrun_app composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
 
-      - name: Permissões de diretório
+      - name: Generate application key
+        run: docker compose exec -T squadrun_app php artisan key:generate
+
+      - name: Directory permissions
         run: |
-          chmod -R 777 storage
-          chmod -R 777 bootstrap/cache
+          docker compose exec -T squadrun_app chmod -R 777 storage
+          docker compose exec -T squadrun_app chmod -R 777 bootstrap/cache
 
-      - name: Configurando variáveis de ambiente para PostgreSQL
-        run: |
-          sed -i "s/^DB_CONNECTION=.*/DB_CONNECTION=pgsql/" .env
-          sed -i "s/^DB_HOST=.*/DB_HOST=postgres/" .env
-          sed -i "s/^DB_PORT=.*/DB_PORT=5432/" .env
-          sed -i "s/^DB_DATABASE=.*/DB_DATABASE=squad_run_testing/" .env
-          sed -i "s/^DB_USERNAME=.*/DB_USERNAME=postgres/" .env
-          sed -i "s/^DB_PASSWORD=.*/DB_PASSWORD=secret/" .env
+      - name: Run migrations
+        run: docker compose exec -T squadrun_app php artisan migrate --force
 
-      - name: Executando testes
-        run: vendor/bin/phpunit --testdox
+      - name: Run tests
+        run: docker compose exec -T squadrun_app vendor/bin/phpunit --testdox
 
-      - name: Exibindo logs do Laravel
-        if: failure()
-        run: cat storage/logs/laravel.log
+      - name: Stop Containers
+        if: always()
+        run: docker compose down
