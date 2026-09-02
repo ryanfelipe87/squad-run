@@ -7,7 +7,7 @@ on:
 
 env:
   COMPOSE_PROJECT_NAME: squadrun_ci
-  COMPOSE_FILE: docker-compose.yml:docker-compose.ci.yml
+  COMPOSE_FILE: docker-compose.yaml:docker-compose.ci.yml
 
 jobs:
   build:
