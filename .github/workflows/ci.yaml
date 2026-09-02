@@ -16,8 +16,11 @@ jobs:
       - name: Instalando dependências do sistema
         run: |
           apt-get update -yqq
-          apt-get install -yqq git unzip libzip-dev libpng-dev libonig-dev
-          docker-php-ext-install pdo pdo_mysql zip
+          apt-get install -yqq git unzip libzip-dev libpng-dev libonig-dev libpq-dev
+          docker-php-ext-install pdo pdo_pgsql zip
+
+      - name: Verificando extensões do PHP
+        run: php -m | grep -i pgsql
 
       - name: Instalando Composer
         run: |
