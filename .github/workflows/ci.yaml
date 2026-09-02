@@ -1,0 +1,70 @@
+name: CI SQUAD-RUN
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: [self-hosted, linux]
+
+    steps:
+      - name: Fix workspace permissions
+        run: docker run --rm -v "$PWD":/var/www alpine chown -R $(id -u):$(id -g) /var/www
+
+      - uses: actions/checkout@v4
+
+      - name: Copy .env file
+        run: cp .env.example .env
+
+      - name: Set database env vars
+        run: |
+          sed -i "s/^DB_CONNECTION=.*/DB_CONNECTION=pgsql/" .env
+          sed -i "s/^DB_HOST=.*/DB_HOST=db/" .env
+          sed -i "s/^DB_PORT=.*/DB_PORT=5432/" .env
+          sed -i "s/^DB_DATABASE=.*/DB_DATABASE=squad_run_testing/" .env
+          sed -i "s/^DB_USERNAME=.*/DB_USERNAME=postgres/" .env
+          sed -i "s/^DB_PASSWORD=.*/DB_PASSWORD=secret/" .env
+
+      - name: Start Docker Containers
+        run: |
+          docker compose down -v
+          docker compose up -d
+
+      - name: Wait for database
+        run: |
+          for i in {1..15}; do
+            docker compose exec -T db pg_isready -U postgres && break
+            echo "Aguardando banco..."
+            sleep 2
+          done
+
+      - name: Install dependencies
+        run: docker compose exec -T app composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+
+      - name: Generate application key
+        run: docker compose exec -T app php artisan key:generate
+
+      - name: Directory permissions
+        run: |
+          docker compose exec -T app chmod -R 777 storage
+          docker compose exec -T app chmod -R 777 bootstrap/cache
+
+      - name: Run migrations
+        run: docker compose exec -T app php artisan migrate --force
+
+      - name: Run tests
+        run: docker compose exec -T app vendor/bin/phpunit --testdox
+
+      - name: Show Laravel log on failure
+        if: failure()
+        run: docker compose exec -T app cat storage/logs/laravel.log
+
+      - name: Stop Containers
+        if: always()
+        run: docker compose down -v
+
+      - name: Fix permissions after run
+        if: always()
+        run: docker run --rm -v "$PWD":/var/www alpine chown -R $(id -u):$(id -g) /var/www
