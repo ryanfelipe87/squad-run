@@ -41,6 +41,15 @@ jobs:
           chmod -R 777 storage
           chmod -R 777 bootstrap/cache
 
+      - name: Configurando variáveis de ambiente para PostgreSQL
+        run: |
+          sed -i "s/^DB_CONNECTION=.*/DB_CONNECTION=pgsql/" .env
+          sed -i "s/^DB_HOST=.*/DB_HOST=postgres/" .env
+          sed -i "s/^DB_PORT=.*/DB_PORT=5432/" .env
+          sed -i "s/^DB_DATABASE=.*/DB_DATABASE=squad_run_testing/" .env
+          sed -i "s/^DB_USERNAME=.*/DB_USERNAME=postgres/" .env
+          sed -i "s/^DB_PASSWORD=.*/DB_PASSWORD=secret/" .env
+
       - name: Executando testes
         run: vendor/bin/phpunit --testdox
 
