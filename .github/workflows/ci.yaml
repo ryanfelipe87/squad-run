@@ -5,6 +5,10 @@ on:
     branches:
       - main
 
+env:
+  COMPOSE_PROJECT_NAME: squadrun_ci
+  COMPOSE_FILE: docker-compose.yml:docker-compose.ci.yml
+
 jobs:
   build:
     runs-on: [self-hosted, linux]
@@ -60,6 +64,10 @@ jobs:
       - name: Show Laravel log on failure
         if: failure()
         run: docker compose exec -T app cat storage/logs/laravel.log
+
+      - name: Stop Containers
+        if: always()
+        run: docker compose down -v
 
       - name: Fix permissions after run
         if: always()

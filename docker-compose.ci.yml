@@ -1,0 +1,9 @@
+services:
+  nginx:
+    ports: []
+
+  db:
+    ports: []
+
+  redis:
+    ports: []
