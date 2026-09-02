@@ -40,3 +40,7 @@ jobs:
 
       - name: Executando testes
         run: vendor/bin/phpunit --testdox
+
+      - name: Exibindo logs do Laravel
+        if: failure()
+        run: cat storage/logs/laravel.log
