@@ -30,11 +30,14 @@ jobs:
           sed -i "s/^DB_DATABASE=.*/DB_DATABASE=squad_run_testing/" .env
           sed -i "s/^DB_USERNAME=.*/DB_USERNAME=postgres/" .env
           sed -i "s/^DB_PASSWORD=.*/DB_PASSWORD=secret/" .env
+          sed -i "s/^REDIS_HOST=.*/REDIS_HOST=redis/" .env
+          sed -i "s/^REDIS_PORT=.*/REDIS_PORT=6379/" .env
 
       - name: Start Docker Containers
         run: |
           docker compose down -v
           docker compose up -d
+          docker compose ps
 
       - name: Wait for database
         run: |
