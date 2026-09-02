@@ -61,10 +61,6 @@ jobs:
         if: failure()
         run: docker compose exec -T app cat storage/logs/laravel.log
 
-      - name: Stop Containers
-        if: always()
-        run: docker compose down -v
-
       - name: Fix permissions after run
         if: always()
         run: docker run --rm -v "$PWD":/var/www alpine chown -R $(id -u):$(id -g) /var/www
