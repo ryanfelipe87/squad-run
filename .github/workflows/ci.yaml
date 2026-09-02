@@ -10,6 +10,9 @@ jobs:
     runs-on: [self-hosted, linux]
 
     steps:
+      - name: Fix workspace permissions
+        run: docker run --rm -v "$PWD":/var/www alpine chown -R $(id -u):$(id -g) /var/www
+
       - uses: actions/checkout@v4
 
       - name: Copy .env file
@@ -19,22 +22,30 @@ jobs:
         run: docker compose up -d
 
       - name: Install dependencies
-        run: docker compose exec -T squadrun_app composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+        run: docker compose exec -T app composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
 
       - name: Generate application key
-        run: docker compose exec -T squadrun_app php artisan key:generate
+        run: docker compose exec -T app php artisan key:generate
 
       - name: Directory permissions
         run: |
-          docker compose exec -T squadrun_app chmod -R 777 storage
-          docker compose exec -T squadrun_app chmod -R 777 bootstrap/cache
+          docker compose exec -T app chmod -R 777 storage
+          docker compose exec -T app chmod -R 777 bootstrap/cache
 
       - name: Run migrations
-        run: docker compose exec -T squadrun_app php artisan migrate --force
+        run: docker compose exec -T app php artisan migrate --force
 
       - name: Run tests
-        run: docker compose exec -T squadrun_app vendor/bin/phpunit --testdox
+        run: docker compose exec -T app vendor/bin/phpunit --testdox
+
+      - name: Show Laravel log on failure
+        if: failure()
+        run: docker compose exec -T app cat storage/logs/laravel.log
 
       - name: Stop Containers
         if: always()
         run: docker compose down
+
+      - name: Fix permissions after run
+        if: always()
+        run: docker run --rm -v "$PWD":/var/www alpine chown -R $(id -u):$(id -g) /var/www
