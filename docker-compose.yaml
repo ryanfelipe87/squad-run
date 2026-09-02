@@ -11,9 +11,8 @@ services:
     networks:
       - squadrun_net
     depends_on:
-      db:
-        condition: service_healthy
-    restart: unless-stopped
+      - db
+    restart: always
 
   nginx:
     image: nginx:alpine
@@ -27,7 +26,6 @@ services:
       - app
     networks:
       - squadrun_net
-    restart: unless-stopped
 
   db:
     image: postgres:14
@@ -43,11 +41,6 @@ services:
       - pgdata:/var/lib/postgresql/data
     networks:
       - squadrun_net
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME}"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
 
   queue:
     build:
@@ -58,28 +51,23 @@ services:
     volumes:
       - ./:/var/www
     depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_started
+      - db
+      - redis
     networks:
       - squadrun_net
-    restart: unless-stopped
 
   scheduler:
     build:
       context: .
       dockerfile: docker/php/Dockerfile
     container_name: squadrun_scheduler
-    command: sh -c "while true; do php artisan schedule:run; sleep 60; done"
+    command: sh -c "While true; do php artisan schedule:run; sleep 60; done"
     volumes:
       - ./:/var/www
     depends_on:
-      db:
-        condition: service_healthy
+      - db
     networks:
       - squadrun_net
-    restart: unless-stopped
 
   redis:
     image: redis:alpine
@@ -88,7 +76,6 @@ services:
       - "6379:6379"
     networks:
       - squadrun_net
-    restart: unless-stopped
 
 networks:
   squadrun_net:
