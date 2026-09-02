@@ -28,7 +28,9 @@ jobs:
           sed -i "s/^DB_PASSWORD=.*/DB_PASSWORD=secret/" .env
 
       - name: Start Docker Containers
-        run: docker compose up -d
+        run: |
+          docker compose down -v
+          docker compose up -d
 
       - name: Wait for database
         run: |
@@ -61,7 +63,7 @@ jobs:
 
       - name: Stop Containers
         if: always()
-        run: docker compose down
+        run: docker compose down -v
 
       - name: Fix permissions after run
         if: always()
